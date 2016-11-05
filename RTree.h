@@ -101,7 +101,7 @@ public:
     /// \param a_resultCallback Callback function to return result.  Callback should return 'true' to continue searching
     /// \param a_context User context to pass as parameter to a_resultCallback
     /// \return Returns the number of entries found
-    int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], t_resultCallback a_resultCallback, void* a_context);
+    int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], t_resultCallback a_resultCallback, void* a_context) const;
 
     /// Find all within search rectangle
     /// \param a_userData User's data to pass as parameter to a_test_function
@@ -109,7 +109,7 @@ public:
     /// \param a_resultCallback Callback function to return result.  Callback should return 'true' to continue searching
     /// \param a_context User context to pass as parameter to a_resultCallback
     /// \return Returns the number of entries found
-    int Search_user_defined(void* a_userData, intersect_test a_intersectTest, t_resultCallback a_resultCallback, void* a_context);
+    int Search_user_defined(void* a_userData, intersect_test a_intersectTest, t_resultCallback a_resultCallback, void* a_context)const;
 
     /// Remove all entries from tree
     void RemoveAll();
@@ -364,10 +364,10 @@ protected:
     bool RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, ListNode** a_listNode);
     ListNode* AllocListNode();
     void FreeListNode(ListNode* a_listNode);
-    bool Overlap(Rect* a_rectA, Rect* a_rectB);
+    bool Overlap(Rect* a_rectA, Rect* a_rectB) const;
     void ReInsert(Node* a_node, ListNode** a_listNode);
-    bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context);
-    bool Search_user_defined(Node* a_node, void* a_userData, intersect_test a_intersectTest, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context);
+    bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
+    bool Search_user_defined(Node* a_node, void* a_userData, intersect_test a_intersectTest, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
     void RemoveAllRec(Node* a_node);
     void Reset();
     void CountRec(Node* a_node, int& a_count);
@@ -535,7 +535,7 @@ void RTREE_QUAL::Remove(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMD
 
 
 RTREE_TEMPLATE
-int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], t_resultCallback a_resultCallback, void* a_context)
+int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], t_resultCallback a_resultCallback, void* a_context) const
 {
 #ifdef _DEBUG
     for(int index=0; index<NUMDIMS; ++index)
@@ -560,7 +560,7 @@ int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDI
     return foundCount;
 }
 RTREE_TEMPLATE
-int RTREE_QUAL::Search_user_defined(void *a_userData, intersect_test a_intersectTest, t_resultCallback a_resultCallback, void *a_context)
+int RTREE_QUAL::Search_user_defined(void *a_userData, intersect_test a_intersectTest, t_resultCallback a_resultCallback, void *a_context) const
 {
     int foundCount = 0;
     //Search(m_root, &rect, foundCount, a_resultCallback, a_context);
@@ -1537,7 +1537,7 @@ bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
 
 // Decide whether two rectangles overlap.
 RTREE_TEMPLATE
-bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB)
+bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB) const
 {
     ASSERT(a_rectA && a_rectB);
 
@@ -1569,7 +1569,7 @@ void RTREE_QUAL::ReInsert(Node* a_node, ListNode** a_listNode)
 
 // Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
 RTREE_TEMPLATE
-bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context)
+bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const
 {
     ASSERT(a_node);
     ASSERT(a_node->m_level >= 0);
@@ -1617,7 +1617,7 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultC
 
 RTREE_TEMPLATE
 bool RTREE_QUAL::Search_user_defined(Node *a_node, void *a_userData, intersect_test a_intersectTest, int &a_foundCount,
-                                     t_resultCallback a_resultCallback, void *a_context)
+                                     t_resultCallback a_resultCallback, void *a_context) const
 {
     ASSERT(a_node);
     ASSERT(a_node->m_level >= 0);
