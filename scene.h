@@ -9,10 +9,26 @@
 #include "RTree.h"
 
 typedef unsigned int faceID;
-
+typedef unsigned int vertexID;
 struct Ray{
     Eigen::Vector3f O,D;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+struct Material{
+    float diffuse_coeff;
+    float specular_coeff;
+    float alpha_phong;
+    bool transparent;
+    float relative_refractive_index;
+    Material(){
+        diffuse_coeff = 0.5;
+        specular_coeff = 0.5;
+        alpha_phong = 2.0;
+        transparent = false;
+        relative_refractive_index = 1.33;
+    }
+
 };
 
 struct Face{
@@ -33,29 +49,47 @@ struct Sunshine{
     float intensity;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+struct PointLight{
+    Eigen::Vector3f pos;
+    float intensity;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+struct Lights{
+    std::vector<Sunshine> sunshines;
+    std::vector<PointLight> pointLights;
+    float ambientIntensity;
+};
 
 class Scene
 {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> vertices;
-    std::vector<Sunshine> sunshines;
-    std::vector<std::array<unsigned int,3>> face_index;
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> vertex_normals;
+
+    std::vector<std::array<vertexID,3>> face_index;
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> face_normals;
+    std::vector<std::vector<faceID>> vertex_to_face;
+
+    std::vector<Material> materials;
+    std::vector<unsigned int> face_material;
 
     typedef RTree<faceID, float, 3, float> MyTree;
     MyTree tree;
+
+    Lights lights;
+
 public:
 
     Scene();
-    void readPlyFile(const char* file);
+    void readPlyFile(const char* file, Material m);
     bool ray_intersect_query(Ray ray, IntersectReport *report)const;
     void addSunshine(Sunshine s);
-    std::vector<Sunshine> getSunshines()const{return sunshines;}
-    Face getFace(int id){
-        Face f;
-        f.v0 = vertices[face_index[id][0]];
-        f.v1 = vertices[face_index[id][1]];
-        f.v2 = vertices[face_index[id][2]];
-        return f;
-    }
+    std::vector<Sunshine> getSunshines()const{return lights.sunshines;}
+    Face getFace(faceID id);
+    const Material& getFaceMaterial(faceID id) const;
+    void setAmbientIntensity(float I);
+    float getAmbientIntensity()const;
+    Lights getAllLights()const;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

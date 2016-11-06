@@ -11,7 +11,8 @@ bool ray_triangle_intersect(Eigen::Matrix<T,3,1> v0,
                             Eigen::Matrix<T,3,1> rayO,
                             Eigen::Matrix<T,3,1> rayD,
                             T* distance_return,
-                            Eigen::Matrix<T,3,1>* intersect_point){
+                            Eigen::Matrix<T,3,1>* intersect_point,
+                            T* uu, T* vv, T* ww){
     using Vec = Eigen::Matrix<T,3,1>;
     const T eps = 1e-9;
     Vec e1 = v1 - v0;
@@ -34,6 +35,7 @@ bool ray_triangle_intersect(Eigen::Matrix<T,3,1> v0,
     if(t > eps){
         *distance_return = t;
         *intersect_point = u * v1 + v * v2 + (1-u-v)*v0;
+        *uu=u; *vv=v; *ww=1-u-v;
         return true;
     }
     return false;

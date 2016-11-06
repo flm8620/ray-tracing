@@ -7,6 +7,14 @@
 
 class Render
 {
+    Lights lights;
+
+    float getIntensity(const Scene& scene, Ray& ray, int reflexLeft);
+    float phongShading(const Eigen::Vector3f& n,
+                                 const Eigen::Vector3f& view,
+                                 const Eigen::Vector3f& light,
+                                 float lightIntensity,
+                                 const Material &mt);
 public:
     Render();
     QImage renderImage(const Camera& cam, const Scene& scene);

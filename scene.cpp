@@ -10,15 +10,32 @@ Scene::Scene()
 
 }
 
-void Scene::readPlyFile(const char *file)
+void Scene::readPlyFile(const char *file, Material m)
 {
     ply_reader::t_ply_result ply_result;
     ply_reader::read_all_in_ply(file,ply_result);
 
-    face_index = ply_result.face_index;
-    vertices.resize(ply_result.vertices.size());
+    faceID face_startID = face_index.size();
+    vertexID vertex_startID = vertices.size();
+    face_index.resize(face_startID + ply_result.face_index.size());
+    face_material.resize(face_startID + ply_result.face_index.size());
+    size_t materialID = materials.size();
+    materials.push_back(m);
+    for(faceID i=0; i<ply_result.face_index.size(); i++){
+        vertexID v0 = ply_result.face_index[i][0];
+        vertexID v1 = ply_result.face_index[i][1];
+        vertexID v2 = ply_result.face_index[i][2];
+        face_index[i + face_startID][0] = v0 + vertex_startID;
+        face_index[i + face_startID][1] = v1 + vertex_startID;
+        face_index[i + face_startID][2] = v2 + vertex_startID;
+        face_material[i + face_startID] = materialID;
+    }
+    face_normals.resize(face_startID + ply_result.face_index.size());
+    vertices.resize(vertex_startID + ply_result.vertices.size());
+    vertex_to_face.resize(vertex_startID + ply_result.vertices.size());
+    vertex_normals.resize(vertex_startID + ply_result.vertices.size());
 
-    int i=0;
+    size_t i=vertex_startID;
     for(auto &v : ply_result.vertices){
         vertices[i][0] = v[0];
         vertices[i][1] = v[1];
@@ -26,25 +43,40 @@ void Scene::readPlyFile(const char *file)
         i++;
     }
 
-    tree.RemoveAll();
-
-
-    for(faceID i=0;i<face_index.size();i++){
-        float rect_min[3], rect_max[3];
-        unsigned int index0 = face_index[i][0];
-        unsigned int index1 = face_index[i][1];
-        unsigned int index2 = face_index[i][2];
+    for(faceID i=face_startID;i<face_index.size();i++){
+        vertexID index0 = face_index[i][0];
+        vertexID index1 = face_index[i][1];
+        vertexID index2 = face_index[i][2];
+        vertex_to_face[index0].push_back(i);
+        vertex_to_face[index1].push_back(i);
+        vertex_to_face[index2].push_back(i);
         Vector3f& v0 = vertices[index0];
         Vector3f& v1 = vertices[index1];
         Vector3f& v2 = vertices[index2];
+
+        float rect_min[3], rect_max[3];
         rect_min[0] = min(v0[0],min(v1[0],v2[0]));
         rect_min[1] = min(v0[1],min(v1[1],v2[1]));
         rect_min[2] = min(v0[2],min(v1[2],v2[2]));
-
         rect_max[0] = max(v0[0],max(v1[0],v2[0]));
         rect_max[1] = max(v0[1],max(v1[1],v2[1]));
         rect_max[2] = max(v0[2],max(v1[2],v2[2]));
         tree.Insert(rect_min,rect_max,i);
+
+        Vector3f n = (v1-v0).cross(v2-v0);
+        n.normalize();
+        face_normals[i]=n;
+    }
+
+
+    for(i=vertex_startID; i<vertex_to_face.size(); i++){
+        std::vector<faceID>& face_list = vertex_to_face[i];
+        Vector3f n(0.0,0.0,0.0);
+        for(faceID face : face_list)
+            n += face_normals[face];
+        n/=face_list.size();
+        n.normalize();
+        vertex_normals[i] = n;
     }
 }
 
@@ -83,30 +115,28 @@ bool Scene::ray_intersect_query(Ray ray_, IntersectReport *report) const
         faceID id = -1;
         Vector3f intersect_point;
         Vector3f closest_intersect_point;
+        float u,v,w;
         for(faceID i : suspects) {
             v1 = vertices[face_index[i][0]];
             v2 = vertices[face_index[i][1]];
             v3 = vertices[face_index[i][2]];
-            float d;
-
-            if(ray_triangle_intersect(v1,v2,v3,ray_.O,ray_.D,&d,&intersect_point)){
+            float d, uu, vv, ww;
+            if(ray_triangle_intersect(v1,v2,v3,ray_.O,ray_.D,&d,&intersect_point,&uu,&vv,&ww)){
                 if(d < distance){
                     id = i;
                     closest_intersect_point=intersect_point;
+                    u=uu,v=vv,w=ww;
                 }
                 distance = std::min(distance,d);
             }
         }
-        if(id!=-1){
-            report->face.v0=vertices[face_index[id][0]];
-            report->face.v1=vertices[face_index[id][1]];
-            report->face.v2=vertices[face_index[id][2]];
-            Vector3f a=report->face.v1 - report->face.v0;
-            Vector3f b=report->face.v2 - report->face.v0;
-            Vector3f n = a.cross(b);
-            n.normalize();
-            if(n.dot(ray_.D) > 0) n=-n;
-            report->normal = n;
+        if(id != -1){
+            vertexID v0 = face_index[id][0];
+            vertexID v1 = face_index[id][1];
+            vertexID v2 = face_index[id][2];
+            report->normal = vertex_normals[v0]*w+vertex_normals[v1]*u+vertex_normals[v2]*v;
+            report->normal.normalize();
+            //report->normal = face_normals[id];
             report->intersect_point = closest_intersect_point;
             report->faceid = id;
             return true;
@@ -119,5 +149,33 @@ bool Scene::ray_intersect_query(Ray ray_, IntersectReport *report) const
 void Scene::addSunshine(Sunshine s)
 {
     s.direction.normalize();
-    sunshines.push_back(s);
+    lights.sunshines.push_back(s);
+}
+
+Face Scene::getFace(faceID id){
+    Face f;
+    f.v0 = vertices[face_index[id][0]];
+    f.v1 = vertices[face_index[id][1]];
+    f.v2 = vertices[face_index[id][2]];
+    return f;
+}
+
+const Material &Scene::getFaceMaterial(faceID id) const
+{
+    return materials[face_material[id]];
+}
+
+void Scene::setAmbientIntensity(float I)
+{
+    lights.ambientIntensity=I;
+}
+
+float Scene::getAmbientIntensity()const
+{
+    return lights.ambientIntensity;
+}
+
+Lights Scene::getAllLights() const
+{
+    return lights;
 }
