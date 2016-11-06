@@ -20,12 +20,16 @@ struct Material{
     float specular_coeff;
     float alpha_phong;
     bool transparent;
+    bool mirror;
+    bool specular;
     float relative_refractive_index;
     Material(){
         diffuse_coeff = 0.5;
         specular_coeff = 0.5;
         alpha_phong = 2.0;
         transparent = false;
+        mirror = false;
+        specular = false;
         relative_refractive_index = 1.33;
     }
 

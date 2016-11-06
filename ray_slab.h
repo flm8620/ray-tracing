@@ -26,7 +26,7 @@ bool slab_test_3d(T rayO[3],T rayN[3],T boxMin[3],T boxMax[3]){
     slab_onedim<T,0>(rayO,rayN,boxMin,boxMax,Tnear,Tfar);
     slab_onedim<T,1>(rayO,rayN,boxMin,boxMax,Tnear,Tfar);
     slab_onedim<T,2>(rayO,rayN,boxMin,boxMax,Tnear,Tfar);
-    if(std::max(Tnear[0],std::max(Tnear[1],Tnear[2])) < std::min(Tfar[0],std::min(Tfar[1],Tfar[2])) )
+    if(std::max(Tnear[0],std::max(Tnear[1],Tnear[2])) <= std::min(Tfar[0],std::min(Tfar[1],Tfar[2])) )
         return true;
     else
         return false;

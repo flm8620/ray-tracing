@@ -17,14 +17,16 @@ float Render::getIntensity(const Scene& scene, Ray& ray, int reflexLeft){
 
     float intensity=0.0;
     if(intersect){
+
         const Material& mt = scene.getFaceMaterial(report.faceid);
         intensity+=lights.ambientIntensity * mt.diffuse_coeff;
         Vector3f n_to_ray = report.normal;
         if(report.normal.dot(ray.D) > 0) n_to_ray = -n_to_ray;
 
+        Vector3f offset_intersect = report.intersect_point + eps * n_to_ray;;
         //sunshine
         Ray ray_sun;
-        ray_sun.O = report.intersect_point + eps * n_to_ray;
+        ray_sun.O = offset_intersect;
         for(Sunshine s : lights.sunshines){
             ray_sun.D = - s.direction;
             if(ray_sun.D.dot(n_to_ray) < 0) continue;
@@ -33,6 +35,14 @@ float Render::getIntensity(const Scene& scene, Ray& ray, int reflexLeft){
             if(!intersect_sun){
                 intensity += phongShading(n_to_ray,-ray.D,ray_sun.D,s.intensity,mt);
             }
+        }
+
+        //reflex
+        if(mt.mirror && reflexLeft > 0){
+            Vector3f r = -2.0 * ray.D.dot(n_to_ray) * n_to_ray + ray.D;
+            Ray reflex;
+            reflex.D = r; reflex.O = offset_intersect;
+            intensity += mt.specular_coeff * getIntensity(scene, reflex, reflexLeft-1);
         }
     }
 
@@ -43,15 +53,17 @@ float Render::phongShading(const Vector3f &n, const Vector3f &view, const Vector
 {
     float intensity=0.0;
     intensity += std::max<float>(0.0,light.dot(n)) * lightIntensity * mat.diffuse_coeff;
-    Vector3f r;
-    r= 2.0 * light.dot(n) * n - light;
-//    float lambda = 1 - r.dot(view);
-//    const int gamma = 4;
-//    float beta = mat.alpha_phong / gamma;
-//    float tmp = 1 - beta * lambda;
-//    float tmp2 = tmp * tmp;
-//    intensity += tmp2*tmp2*mat.specular_coeff*lightIntensity;
-    intensity += pow(r.dot(view),mat.alpha_phong) * mat.specular_coeff*lightIntensity;
+    if(mat.specular){
+        Vector3f r;
+        r= 2.0 * light.dot(n) * n - light;
+        //    float lambda = 1 - r.dot(view);
+        //    const int gamma = 4;
+        //    float beta = mat.alpha_phong / gamma;
+        //    float tmp = 1 - beta * lambda;
+        //    float tmp2 = tmp * tmp;
+        //    intensity += tmp2*tmp2*mat.specular_coeff*lightIntensity;
+        intensity += pow(r.dot(view),mat.alpha_phong) * mat.specular_coeff*lightIntensity;
+    }
     return intensity;
 }
 
@@ -72,7 +84,7 @@ QImage Render::renderImage(const Camera& cam, const Scene& scene){
             v = cam.rotationMatrix() * v;
 
             Ray ray; ray.O=o; ray.D=v;
-            float intensity = getIntensity(scene, ray, 1);
+            float intensity = getIntensity(scene, ray, 5);
             intensity = std::max<float>(std::min<float>(intensity,1.0f),0.0f);
             image.setPixel(j,i,qRgb(255*intensity,255*intensity,255*intensity));
         }
