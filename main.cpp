@@ -51,7 +51,7 @@ int main()
 
 
     Camera cam;
-    cam.setPosition(Eigen::Vector3f(0.0,-0.4,0.3));
+    cam.setPosition(Eigen::Vector3f(0.05,-0.2,0.15));
     cam.lookAt(Eigen::Vector3f(-0.05,0.0,0.03));
     cam.height=800; cam.width=1000;
     cam.focal=600;
