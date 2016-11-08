@@ -94,6 +94,7 @@ public:
     void setAmbientIntensity(float I);
     float getAmbientIntensity()const;
     Lights getAllLights()const;
+    void exportRTreeToPly(const char * file);
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <vector>
 
 #define ASSERT assert // RTree uses ASSERT( condition )
 #ifndef Min
@@ -127,6 +128,10 @@ public:
     bool Save(const char* a_fileName);
     /// Save tree contents to stream
     bool Save(RTFileStream& a_stream);
+    /// return tree structure
+    void GetTreeStructure(std::vector<std::pair<Rect,int>>& boxes, int& total_depth, int depth_limit = -1);
+
+
 
     /// Iterator is not remove safe.
     class Iterator
@@ -368,6 +373,7 @@ protected:
     void ReInsert(Node* a_node, ListNode** a_listNode);
     bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
     bool Search_user_defined(Node* a_node, void* a_userData, intersect_test a_intersectTest, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
+    void GetStructureRecursive(std::vector<std::pair<Rect,int>>& boxes, Node* node, int depth, int& total_depth, int max_depth = -1);
     void RemoveAllRec(Node* a_node);
     void Reset();
     void CountRec(Node* a_node, int& a_count);
@@ -743,6 +749,12 @@ bool RTREE_QUAL::Save(RTFileStream& a_stream)
     bool result = SaveRec(m_root, a_stream);
 
     return result;
+}
+
+RTREE_TEMPLATE
+void RTREE_QUAL::GetTreeStructure(std::vector<std::pair<Rect,int>> &boxes, int &total_depth, int depth_limit)
+{
+    GetStructureRecursive(boxes,m_root, 0, total_depth, depth_limit);
 }
 
 
@@ -1661,6 +1673,28 @@ bool RTREE_QUAL::Search_user_defined(Node *a_node, void *a_userData, intersect_t
     }
 
     return true; // Continue searching
+}
+RTREE_TEMPLATE
+void RTREE_QUAL::GetStructureRecursive(std::vector<std::pair<Rect, int> > &boxes, RTree::Node *node, int depth, int& total_depth, int max_depth_limit)
+{
+    ASSERT(node);
+    ASSERT(node->m_level >= 0);
+    total_depth = std::max(total_depth, depth);
+    if(node->IsInternalNode())
+    {
+        // This is an internal node in the tree
+        for(int index=0; index < node->m_count; ++index)
+        {
+            boxes.push_back(std::make_pair(node->m_branch[index].m_rect,depth));
+            if(max_depth_limit < 0 || (max_depth_limit>=0 && depth<max_depth_limit))
+                GetStructureRecursive(boxes, node->m_branch[index].m_child, depth+1, total_depth, max_depth_limit);
+        }
+    }else{
+        for(int index=0; index < node->m_count; ++index)
+        {
+            boxes.push_back(std::make_pair(node->m_branch[index].m_rect,depth));
+        }
+    }
 }
 
 

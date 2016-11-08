@@ -23,7 +23,7 @@ float Render::getIntensity(const Scene& scene, Ray& ray, int reflexLeft){
         Vector3f n_to_ray = report.normal;
         if(report.normal.dot(ray.D) > 0) n_to_ray = -n_to_ray;
 
-        Vector3f offset_intersect = report.intersect_point + eps * n_to_ray;;
+        Vector3f offset_intersect = report.intersect_point + eps * n_to_ray;
         //sunshine
         Ray ray_sun;
         ray_sun.O = offset_intersect;
@@ -37,14 +37,58 @@ float Render::getIntensity(const Scene& scene, Ray& ray, int reflexLeft){
             }
         }
 
+        float reflex_intensity=0;
         //reflex
         if(mt.mirror && reflexLeft > 0){
             Vector3f r = -2.0 * ray.D.dot(n_to_ray) * n_to_ray + ray.D;
             Ray reflex;
             reflex.D = r; reflex.O = offset_intersect;
-            intensity += mt.specular_coeff * getIntensity(scene, reflex, reflexLeft-1);
+            reflex_intensity = mt.specular_coeff * getIntensity(scene, reflex, reflexLeft-1);
         }
+
+        float T=0.0, R=1.0;
+        //refraction
+        if(mt.transparent && reflexLeft > 0){
+            float n1,n2;
+            mt.relative_refractive_index;
+            if(report.normal.dot(ray.D) > 0) {
+                n1 = mt.relative_refractive_index;
+                n2 = 1.0;
+            }else{
+                n2 = mt.relative_refractive_index;
+                n1 = 1.0;
+            }
+            Vector3f v = - ray.D;
+            Vector3f v_par = v - n_to_ray * (v.dot(n_to_ray));
+            float sin_i = v_par.norm();
+            float sin_r = n1 * sin_i / n2;
+
+            if(sin_r < 1){
+                float cos_i = std::sqrt(1-sin_i*sin_i);
+                float cos_r = std::sqrt(1-sin_r*sin_r);
+                float n1i = n1*cos_i;
+                float n1r = n1*cos_r;
+                float n2i = n2*cos_i;
+                float n2r = n2*cos_r;
+                float Rs = (n1i-n2r)*(n1i-n2r)/((n1i+n2r)*(n1i+n2r));
+                float Rp = (n1r-n2i)*(n1r-n2i)/((n1r+n2i)*(n1r+n2i));
+                R = 0.5*(Rs+Rp);
+                T = 1-R;
+                Vector3f p = v.cross(n_to_ray).cross(n_to_ray);
+                p.normalize();
+                Vector3f t = -n_to_ray*cos_r + p * sin_r;
+                Ray refraction;
+                refraction.D = t; refraction.O = report.intersect_point - eps * n_to_ray;
+                intensity += T * mt.specular_coeff * getIntensity(scene, refraction, reflexLeft-1);
+            }else{
+                R=1.0;
+            }
+
+
+        }
+        intensity += R * reflex_intensity;
     }
+
 
     return intensity;
 }
@@ -75,6 +119,7 @@ QImage Render::renderImage(const Camera& cam, const Scene& scene){
     lights = scene.getAllLights();
     Vector3f o(cam.x(),cam.y(),cam.z());
     for(int i=0;i<H;i++){
+        cout<<i<<endl;
         for(int j=0;j<W;j++){
             Vector3f v;
             v[0]=j-center_x;

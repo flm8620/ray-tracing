@@ -154,5 +154,31 @@ TEST(RTree,rtree){
 
     cout << "Mean time: "<< past/nsearch <<" second(s)."<< endl;
     cout << "mean hits: "<< double(hits)/nsearch << endl;
+
+    // Iterator test
+    int itIndex = 0;
+    MyTree::Iterator it;
+    for( tree.GetFirst(it);
+         !tree.IsNull(it);
+         tree.GetNext(it) )
+    {
+      int value = tree.GetAt(it);
+
+      float boundsMin[3] = {0,0,0};
+      float boundsMax[3] = {0,0,0};
+      it.GetBounds(boundsMin, boundsMax);
+      cout << "it[" << itIndex++ << "] " << value << " = (" << boundsMin[0] << "," << boundsMin[1] << "," << boundsMax[0] << "," << boundsMax[1] << ")\n";
+    }
+
+    // Iterator test, alternate syntax
+    itIndex = 0;
+    tree.GetFirst(it);
+    while( !it.IsNull() )
+    {
+      int value = *it;
+      ++it;
+      cout << "it[" << itIndex++ << "] " << value << "\n";
+    }
+
 }
 
