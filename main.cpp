@@ -29,6 +29,7 @@ int main()
     m3.mirror = true;
     m3.relative_refractive_index = 1.6;
     scene.readPlyFile("/home/leman/Documents/lens2.ply", m3);
+    scene.readPlyFile("/home/leman/Documents/lens3.ply", m3);
 
 
     Material m;

@@ -211,7 +211,7 @@ void Scene::exportRTreeToPly(const char *file)
 
     for( auto & box : boxes )
     {
-        if(box.second > 5)continue;
+        if(box.second > 2)continue;
         float *a = box.first.m_min;
         float *b = box.first.m_max;
         int c = 255 - 255. * box.second/total_depth;
