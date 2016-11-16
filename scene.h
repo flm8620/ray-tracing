@@ -7,6 +7,7 @@
 #include<Eigen/StdVector>
 #include "ply_read.h"
 #include "RTree.h"
+#include "geometry_util.h"
 
 typedef unsigned int faceID;
 typedef unsigned int vertexID;

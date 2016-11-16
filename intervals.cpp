@@ -12,7 +12,12 @@ DisjointIntervals::DisjointIntervals(std::vector<Interval> const &intervals)
     sanitize();
 }
 
-void DisjointIntervals::intersectionWith(DisjointIntervals const &other)
+DisjointIntervals::DisjointIntervals()
+{
+
+}
+
+DisjointIntervals &DisjointIntervals::intersectionWith(DisjointIntervals const &other)
 {
     auto it1 = this->intervals.cbegin();
     auto it2 = other.intervals.cbegin();
@@ -46,7 +51,7 @@ void DisjointIntervals::intersectionWith(DisjointIntervals const &other)
                 //      --[------]-
                 //      -----[-]---
                 // it2:      ^
-                new_intervals.insert(*it2);
+                new_intervals.insert(new_intervals.end(), *it2);
                 it2++;
                 continue;
             }else{
@@ -55,16 +60,17 @@ void DisjointIntervals::intersectionWith(DisjointIntervals const &other)
                 //      -----[---]-
                 // it2:      ^
                 Interval I = {it2->left, it1->right};
-                new_intervals.insert(I);
+                new_intervals.insert(new_intervals.end(), I);
                 it1++;
                 continue;
             }
         }
     }
     intervals=new_intervals;
+    return *this;
 }
 
-void DisjointIntervals::unionWith(DisjointIntervals const &other)
+DisjointIntervals &DisjointIntervals::unionWith(DisjointIntervals const &other)
 {
     auto it1 = this->intervals.cbegin();
     auto it2 = other.intervals.cbegin();
@@ -76,9 +82,9 @@ void DisjointIntervals::unionWith(DisjointIntervals const &other)
     //if either is empty
     if(it1==end1){
         intervals = other.intervals;
-        return;
+        return *this;
     }else if(it2==end2){
-        return;
+        return *this;
     }
 
     if(it1->left > it2->left){
@@ -104,14 +110,38 @@ void DisjointIntervals::unionWith(DisjointIntervals const &other)
             it1++;
             continue;
         }else{
-            new_intervals.insert(new_last);
+            new_intervals.insert(new_intervals.end(), new_last);
             new_last = *it1;
             it1++;
             continue;
         }
     }
-    new_intervals.insert(new_last);
+    new_intervals.insert(new_intervals.end(), new_last);
     intervals=new_intervals;
+    return *this;
+}
+
+DisjointIntervals& DisjointIntervals::inverse()
+{
+    std::set<Interval> new_intervals;
+    Interval new_last;
+    new_last.left = NEG_INF;
+    for(Interval const & I : intervals){
+        new_last.right = I.left;
+        new_intervals.insert(new_intervals.end(), new_last);
+        new_last.left = I.right;
+    }
+    new_last.right = POS_INF;
+    if(!intervals.empty()){
+        if(intervals.begin()->left==NEG_INF){
+            new_intervals.erase(new_intervals.begin());
+        }
+        if(intervals.rbegin()->right==POS_INF){
+            new_intervals.erase(--new_intervals.end());
+        }
+    }
+    intervals = new_intervals;
+    return *this;
 }
 
 void DisjointIntervals::print()
@@ -152,13 +182,13 @@ void DisjointIntervals::sanitize()
             it++;
             continue;
         }else{
-            new_intervals.insert(new_last);
+            new_intervals.insert(new_intervals.end(), new_last);
             new_last = *it;
             it++;
             continue;
         }
     }
-    new_intervals.insert(new_last);
+    new_intervals.insert(new_intervals.end(), new_last);
     intervals=new_intervals;
 }
 

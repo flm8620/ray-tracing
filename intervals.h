@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <set>
-
+#include <limits>
 class DisjointIntervals
 {
 public:
@@ -12,12 +12,17 @@ public:
         bool operator<(Interval const & other) const;
         bool operator==(Interval const & other) const;
     };
-    //Intervals(std::set<Interval> const &intervals);
+    constexpr static float NEG_INF = -std::numeric_limits<float>::infinity();
+    constexpr static float POS_INF = std::numeric_limits<float>::infinity();
     DisjointIntervals(std::vector<Interval> const &intervals);
-    void intersectionWith(DisjointIntervals const &other);
-    void unionWith(DisjointIntervals const &other);
+    DisjointIntervals();
+    DisjointIntervals& intersectionWith(DisjointIntervals const &other);
+    DisjointIntervals& unionWith(DisjointIntervals const &other);
+    DisjointIntervals& inverse();
     void print();
     bool operator==(DisjointIntervals const &other) const;
+    std::set<Interval>::const_iterator begin()const{return intervals.cbegin();}
+    std::set<Interval>::const_iterator end()const{return intervals.cend();}
 private:
     std::set<Interval> intervals;
     void sanitize();

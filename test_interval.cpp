@@ -1,17 +1,17 @@
 #include "gtest/gtest.h"
 #include "intervals.h"
 TEST(intervals,union_intersect){
-    DisjointIntervals A({});
-    DisjointIntervals B({});
+    DisjointIntervals A;
+    DisjointIntervals B;
 
     A.unionWith(B);
-    EXPECT_EQ(A,DisjointIntervals({}));
+    EXPECT_EQ(A,DisjointIntervals());
     A.intersectionWith(B);
-    EXPECT_EQ(A,DisjointIntervals({}));
+    EXPECT_EQ(A,DisjointIntervals());
 
     DisjointIntervals C({{0,10}});
     A.intersectionWith(C);
-    EXPECT_EQ(A,DisjointIntervals({}));
+    EXPECT_EQ(A,DisjointIntervals());
     A.unionWith(C);
     EXPECT_EQ(A,C);
 
@@ -31,7 +31,7 @@ TEST(intervals,union_intersect){
 
     DisjointIntervals G({{5,6}});
     A.intersectionWith(G);
-    EXPECT_EQ(A,DisjointIntervals({}));
+    EXPECT_EQ(A,DisjointIntervals());
 
     DisjointIntervals H({{7,8}});
     G.unionWith(H);
@@ -44,4 +44,12 @@ TEST(intervals,union_intersect){
     DisjointIntervals J({{6,7}});
     G.unionWith(J);
     EXPECT_EQ(G,DisjointIntervals({{5.5,7.5}}));
+
+    EXPECT_EQ(A,A.inverse().inverse());
+    EXPECT_EQ(B,B.inverse().inverse());
+    EXPECT_EQ(C,C.inverse().inverse());
+    EXPECT_EQ(D,D.inverse().inverse());
+    EXPECT_EQ(E,E.inverse().inverse());
+    EXPECT_EQ(F,F.inverse().inverse());
+    EXPECT_EQ(G,G.inverse().inverse());
 }

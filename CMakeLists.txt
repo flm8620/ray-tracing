@@ -13,7 +13,7 @@ find_package(Qt5Widgets)
 add_subdirectory(lib/rply)
 
 add_executable(${PROJECT_NAME} main.cpp RTree.h ray_slab.h geometry_util.h geometry_util.cpp camera.h camera.cpp
-    render.h render.cpp scene.cpp scene.h)
+    render.h render.cpp scene.cpp scene.h intervals.cpp intervals.h)
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
 target_link_libraries(${PROJECT_NAME} ply_reader)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen)
