@@ -3,18 +3,13 @@
 
 #include <vector>
 #include <array>
+#include <memory>
 #include <Eigen/Dense>
-#include<Eigen/StdVector>
-#include "ply_read.h"
+#include <Eigen/StdVector>
+
 #include "RTree.h"
 #include "geometry_util.h"
-
-typedef unsigned int faceID;
-typedef unsigned int vertexID;
-struct Ray{
-    Eigen::Vector3f O,D;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
+#include "mesh.h"
 
 struct Material{
     float diffuse_coeff;
@@ -36,19 +31,6 @@ struct Material{
 
 };
 
-struct Face{
-    Eigen::Vector3f v0,v1,v2;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-
-struct IntersectReport{
-    Face face;
-    faceID faceid;
-    Eigen::Vector3f normal;
-    Eigen::Vector3f intersect_point;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-
 struct Sunshine{
     Eigen::Vector3f direction;
     float intensity;
@@ -68,17 +50,13 @@ struct Lights{
 
 class Scene
 {
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> vertices;
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> vertex_normals;
-
-    std::vector<std::array<vertexID,3>> face_index;
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> face_normals;
-    std::vector<std::vector<faceID>> vertex_to_face;
+    typedef unsigned int objectID;
+    std::vector<std::shared_ptr<Intersectable>> objects;
 
     std::vector<Material> materials;
     std::vector<unsigned int> face_material;
 
-    typedef RTree<faceID, float, 3, float> MyTree;
+    typedef RTree<objectID, float, 3, float> MyTree;
     MyTree tree;
 
     Lights lights;
@@ -86,12 +64,10 @@ class Scene
 public:
 
     Scene();
-    void readPlyFile(const char* file, Material m);
-    bool ray_intersect_query(Ray ray, IntersectReport *report)const;
+    void addMeshFromPlyFile(const char* file);
     void addSunshine(Sunshine s);
     std::vector<Sunshine> getSunshines()const{return lights.sunshines;}
-    Face getFace(faceID id);
-    const Material& getFaceMaterial(faceID id) const;
+
     void setAmbientIntensity(float I);
     float getAmbientIntensity()const;
     Lights getAllLights()const;
