@@ -64,8 +64,10 @@ class CSG_Box : public CSG_Geometric {
     Eigen::Transform<float,3,Eigen::Affine> origin_transform_inverse;
     Eigen::Vector3f size_min, size_max;
 public:
-    CSG_Box(Eigen::Vector3f& min,
-            Eigen::Vector3f& max,
+    CSG_Box(Eigen::Vector3f min,
+            Eigen::Vector3f max,
+            Eigen::Transform<float,3,Eigen::Affine> origin_transform = Eigen::Transform<float,3,Eigen::Affine>::Identity());
+    CSG_Box(Eigen::Vector3f size,
             Eigen::Transform<float,3,Eigen::Affine> origin_transform = Eigen::Transform<float,3,Eigen::Affine>::Identity());
     virtual Eigen::AlignedBox3f getBoundingBox()const override;
     virtual bool rayIntersectIntervals(Eigen::Vector3f& rayO,

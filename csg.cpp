@@ -34,10 +34,18 @@ bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &r
     return true;
 }
 
-CSG_Box::CSG_Box(Eigen::Vector3f &min, Eigen::Vector3f &max, Eigen::Transform<float, 3, Eigen::Affine> origin_transform)
+CSG_Box::CSG_Box(Eigen::Vector3f min, Eigen::Vector3f max, Eigen::Transform<float, 3, Eigen::Affine> origin_transform)
 {
     this->size_min = min;
     this->size_max = max;
+    this->origin_transform = origin_transform;
+    this->origin_transform_inverse = origin_transform.inverse(Eigen::Affine);
+}
+
+CSG_Box::CSG_Box(Eigen::Vector3f size, Eigen::Transform<float, 3, Eigen::Affine> origin_transform)
+{
+    this->size_min = -size/2.0;
+    this->size_max = size/2.0;
     this->origin_transform = origin_transform;
     this->origin_transform_inverse = origin_transform.inverse(Eigen::Affine);
 }
@@ -54,6 +62,7 @@ Eigen::AlignedBox3f CSG_Box::getBoundingBox()const
             }
         }
     }
+    return box;
 }
 
 bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior)const
@@ -62,7 +71,7 @@ bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD
     Eigen::Vector3f rayD_t = origin_transform_inverse.linear() * rayD;
     float rayO_a[3], rayD_a[3], boxMin[3], boxMax[3];
     EigenToArray(rayO_t,rayO_a);
-    EigenToArray(rayD_t,rayO_a);
+    EigenToArray(rayD_t,rayD_a);
     EigenToArray(size_min,boxMin);
     EigenToArray(size_max,boxMax);
     int axis_in, axis_out;
@@ -98,6 +107,7 @@ bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD
         n_out=origin_transform.linear() * n_out;
 
         interior = DisjointIntervals({{t_in, t_out, n_in, n_out}});
+        return true;
     }else{
         return false;
     }

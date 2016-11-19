@@ -15,6 +15,7 @@
 #include "scene.h"
 #include "render.h"
 using namespace std;
+using namespace Eigen;
 
 
 int main()
@@ -41,18 +42,19 @@ int main()
     m.transparent = false;
     scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
 
-    std::shared_ptr<CSG> sphere1(new CSG_Sphere(Eigen::Vector3f(-0.03,-0.05,0.04), 0.02f));
-    std::shared_ptr<CSG> sphere2(new CSG_Sphere(Eigen::Vector3f(-0.03,-0.08,0.04), 0.02f));
+    std::shared_ptr<CSG> sphere1(new CSG_Sphere(Vector3f(-0.03,-0.05,0.04), 0.02f));
+    std::shared_ptr<CSG> sphere2(new CSG_Sphere(Vector3f(-0.03,-0.08,0.04), 0.02f));
     std::vector<std::shared_ptr<CSG>> spheres = {sphere1, sphere2};
     std::shared_ptr<CSG> lens(new CSG_Intersection(spheres));
 
-    std::shared_ptr<CSG> cylinder(new CSG_Cylinder(Eigen::Vector3f(-0.03,-0.05,0.04),
-                                                   Eigen::Vector3f(1.0,0.0,1.0),
+    std::shared_ptr<CSG> cylinder(new CSG_Cylinder(Vector3f(-0.03,-0.05,0.04),
+                                                   Vector3f(1.0,0.0,1.0),
                                                    0.02,
                                                    0.0,
                                                    0.03));
-
-    scene.addObject(cylinder, m);
+    std::shared_ptr<CSG> box(new CSG_Box(Vector3f(-0.03,-0.05,0.04),
+                                         Vector3f(-0.02,-0.04,0.05)));
+    scene.addObject(box, m);
 
 
     //scene.exportRTreeToPly("rtree.ply");
@@ -69,11 +71,11 @@ int main()
 
 
     Sunshine sun;
-    sun.direction=Eigen::Vector3f(0.0,0.0,-1.0);
+    sun.direction=Vector3f(0.0,0.0,-1.0);
     sun.intensity=0.8;
     scene.addSunshine(sun);
 
-    sun.direction=Eigen::Vector3f(1.0,1.0,1.0);
+    sun.direction=Vector3f(1.0,1.0,1.0);
     sun.intensity=0.2;
     //scene.addSunshine(sun);
 
@@ -81,8 +83,8 @@ int main()
 
 
     Camera cam(800,600,600);
-    cam.setPosition(Eigen::Vector3f(0.0,-0.20,0.06));
-    cam.lookAt(Eigen::Vector3f(-0.05,0.0,0.03));
+    cam.setPosition(Vector3f(0.0,-0.20,0.06));
+    cam.lookAt(Vector3f(-0.05,0.0,0.03));
     cam.height=800; cam.width=1000;
     cam.focal=600;
 
