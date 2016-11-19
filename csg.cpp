@@ -1,5 +1,6 @@
 #include "csg.h"
 #include "ray_slab.h"
+#include <iostream>
 CSG_Sphere::CSG_Sphere(Eigen::Vector3f center, float radius)
 {
     this->center = center;
@@ -270,4 +271,54 @@ bool CSG::rayIntersect(Eigen::Vector3f &rayO,
     report.normal = it->second;
     report.intersect_point = rayO + rayD * report.t;
     return true;
+}
+
+CSG_Intersection::CSG_Intersection(std::vector<std::shared_ptr<CSG> > &objects)
+    : objects(objects)
+{
+
+}
+
+void CSG_Intersection::getBoundingBox(float min[], float max[]) const
+{
+    min[0]=min[1]=min[2]=std::numeric_limits<float>::min();
+    max[0]=max[1]=max[2]=std::numeric_limits<float>::max();
+    for(auto obj : objects){
+        float min_[3]; float max_[3];
+        obj->getBoundingBox(min, max);
+        min[0]=std::max(min[0],min_[0]);
+        min[1]=std::max(min[1],min_[1]);
+        min[2]=std::max(min[2],min_[2]);
+        max[0]=std::min(max[0],max_[0]);
+        max[1]=std::min(max[1],max_[1]);
+        max[2]=std::min(max[2],max_[2]);
+    }
+}
+
+bool CSG_Intersection::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap) const
+{
+    std::cout<<"here1"<<std::endl;
+    bool r = false;
+    NormalsMap normalsMapUnion;
+    interior = DisjointIntervals::all();
+    for(auto obj : objects){
+        NormalsMap normalsMap_;
+        DisjointIntervals interior_;
+        if(obj->rayIntersectIntervals(rayO, rayD, interior_, normalsMap_)){
+            normalsMapUnion.insert(normalsMap_.begin(), normalsMap_.end());
+            interior.intersectionWith(interior_);
+            r = true;
+        }else{
+            return false;
+        }
+    }
+    std::cout<<"here------------------"<<std::endl;
+    normalsMap.clear();
+    auto end = interior.end();
+    for(auto it = interior.begin(); it != end; it++){
+        normalsMap[it->left] = normalsMapUnion[it->left];
+        normalsMap[it->right] = normalsMapUnion[it->right];
+    }
+
+    return r;
 }

@@ -23,6 +23,9 @@ public:
     bool operator==(DisjointIntervals const &other) const;
     std::set<Interval>::const_iterator begin()const{return intervals.cbegin();}
     std::set<Interval>::const_iterator end()const{return intervals.cend();}
+
+    static DisjointIntervals empty();
+    static DisjointIntervals all();
 private:
     std::set<Interval> intervals;
     void sanitize();

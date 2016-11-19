@@ -36,6 +36,18 @@ public:
                                        NormalsMap& normalsMap) const override;
 };
 
+class CSG_Intersection : public CSG{
+    std::vector<std::shared_ptr<CSG> > objects;
+
+public:
+    CSG_Intersection(std::vector<std::shared_ptr<CSG> >& objects);
+    virtual void getBoundingBox(float min[3],float max[3])const override;
+    virtual bool rayIntersectIntervals(Eigen::Vector3f& rayO,
+                                       Eigen::Vector3f& rayD,
+                                       DisjointIntervals& interior,
+                                       NormalsMap& normalsMap) const override;
+};
+
 class CSG_Geometric : public CSG{
 };
 

@@ -156,6 +156,19 @@ bool DisjointIntervals::operator==(const DisjointIntervals &other) const
     return intervals==other.intervals;
 }
 
+DisjointIntervals DisjointIntervals::empty()
+{
+    return DisjointIntervals();
+}
+
+DisjointIntervals DisjointIntervals::all()
+{
+    DisjointIntervals r;
+    Interval I{NEG_INF,POS_INF};
+    r.intervals.insert(I);
+    return r;
+}
+
 void DisjointIntervals::sanitize()
 {
     for(auto it=intervals.begin(); it!=intervals.end();){

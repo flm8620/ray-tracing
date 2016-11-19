@@ -41,8 +41,11 @@ int main()
     m.transparent = false;
     scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
 
-    std::shared_ptr<Intersectable> sphere(new CSG_Sphere(Eigen::Vector3f(-0.09,-0.02,0.03), 0.02f));
-    scene.addObject(sphere, m3);
+    std::shared_ptr<CSG> sphere1(new CSG_Sphere(Eigen::Vector3f(0.0,-0.05,0.03), 0.02f));
+    std::shared_ptr<CSG> sphere2(new CSG_Sphere(Eigen::Vector3f(-0.02,-0.05,0.03), 0.02f));
+    std::vector<std::shared_ptr<CSG>> spheres = {sphere1, sphere2};
+    std::shared_ptr<CSG> lens(new CSG_Intersection(spheres));
+    scene.addObject(lens, m3);
 
 
     //scene.exportRTreeToPly("rtree.ply");
