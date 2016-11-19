@@ -42,7 +42,7 @@ bool slab_test_3d_info(T rayO[3],T rayN[3],T boxMin[3],T boxMax[3], T &t_in, T &
     slab_onedim<T,2>(rayO,rayN,boxMin,boxMax,Tnear,Tfar);
     t_in = std::max(Tnear[0],std::max(Tnear[1],Tnear[2]));
     t_out = std::min(Tfar[0],std::min(Tfar[1],Tfar[2]));
-    if(t_in <= t_out){
+    if(t_in <= t_out && t_out > 0){
         float max_near=Tnear[0];
         axis_in = 0;
         if(Tnear[1]>max_near){

@@ -46,8 +46,13 @@ int main()
     std::vector<std::shared_ptr<CSG>> spheres = {sphere1, sphere2};
     std::shared_ptr<CSG> lens(new CSG_Intersection(spheres));
 
+    std::shared_ptr<CSG> cylinder(new CSG_Cylinder(Eigen::Vector3f(-0.03,-0.05,0.04),
+                                                   Eigen::Vector3f(1.0,0.0,1.0),
+                                                   0.02,
+                                                   0.0,
+                                                   0.03));
 
-    scene.addObject(lens, m3);
+    scene.addObject(cylinder, m);
 
 
     //scene.exportRTreeToPly("rtree.ply");

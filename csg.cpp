@@ -154,6 +154,7 @@ bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f 
     float t_in = std::max(t_in_cover, t_in_wall);
     float t_out = std::min(t_out_cover, t_out_wall);
     if(t_in > t_out) return false;
+    if(t_out <= 0) return false;
 
     Eigen::Vector3f p_in = rayO + t_in * rayD;
     Eigen::Vector3f p_out = rayO + t_out * rayD;
@@ -165,7 +166,7 @@ bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f 
         else
             n_in = direction;
     }else{
-        n_in= p_in - p_in.dot(direction)*direction;
+        n_in= p_in - ((p_in-center).dot(direction)*direction + center);
         n_in.normalize();
     }
     if(t_out_wall > t_out_cover){
@@ -174,7 +175,7 @@ bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f 
         else
             n_out = direction;
     }else{
-        n_out = p_out - p_out.dot(direction)*direction;
+        n_out = p_out - ((p_out-center).dot(direction)*direction + center);
         n_out.normalize();
     }
 
