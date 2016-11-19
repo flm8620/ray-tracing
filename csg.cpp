@@ -8,17 +8,13 @@ CSG_Sphere::CSG_Sphere(Eigen::Vector3f center, float radius)
     this->sq_radius = radius * radius;
 }
 
-void CSG_Sphere::getBoundingBox(float min[3], float max[3])const
+Eigen::AlignedBox3f CSG_Sphere::getBoundingBox()const
 {
-    min[0] = center[0] - radius;
-    min[1] = center[1] - radius;
-    min[2] = center[2] - radius;
-    max[0] = center[0] + radius;
-    max[1] = center[1] + radius;
-    max[2] = center[2] + radius;
+    Eigen::Vector3f rrr = {radius,radius,radius};
+    return Eigen::AlignedBox3f(center-rrr, center+rrr);
 }
 
-bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap)const
+bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior)const
 {
     float t = rayD.dot(center-rayO);
     Eigen::Vector3f P = rayO + t * rayD;
@@ -34,9 +30,7 @@ bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &r
     Eigen::Vector3f n_out = (rayD * t_out + rayO) - center;
     n_out.normalize();
     if(t_in<0) t_in = DisjointIntervals::NEG_INF;
-    normalsMap[t_in]=n_in;
-    normalsMap[t_out]=n_out;
-    interior = DisjointIntervals({{t_in,t_out}});
+    interior = DisjointIntervals({{t_in,t_out,n_in,n_out}});
     return true;
 }
 
@@ -48,27 +42,21 @@ CSG_Box::CSG_Box(Eigen::Vector3f &min, Eigen::Vector3f &max, Eigen::Transform<fl
     this->origin_transform_inverse = origin_transform.inverse(Eigen::Affine);
 }
 
-void CSG_Box::getBoundingBox(float min[3], float max[3])const
+Eigen::AlignedBox3f CSG_Box::getBoundingBox()const
 {
-    for(auto i : {0,1,2}){
-        min[i]=std::numeric_limits<float>::max();
-        max[i]=std::numeric_limits<float>::min();
-    }
+    Eigen::AlignedBox3f box;
     for(auto & v0 : {size_min, size_max} ){
         for(auto & v1 : {size_min, size_max} ){
             for(auto & v2 : {size_min, size_max} ){
                 Eigen::Vector3f v(v0[0],v1[1],v2[2]);
                 v = origin_transform.linear() * v;
-                for(auto i : {0,1,2}){
-                    min[i] = std::min(min[i],v[i]);
-                    max[i] = std::max(max[i],v[i]);
-                }
+                box.extend(v);
             }
         }
     }
 }
 
-bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap)const
+bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior)const
 {
     Eigen::Vector3f rayO_t = origin_transform_inverse * rayO;
     Eigen::Vector3f rayD_t = origin_transform_inverse.linear() * rayD;
@@ -81,7 +69,6 @@ bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD
     float t_in, t_out;
     if(slab_test_3d_info<float>(rayO_a, rayD_a, boxMin, boxMax, t_in, t_out, axis_in, axis_out)){
         if(t_in<0) t_in = DisjointIntervals::NEG_INF;
-        interior = DisjointIntervals({{t_in, t_out}});
         Eigen::Vector3f n_in, n_out;
         switch (axis_in) {
         case 0:
@@ -107,8 +94,10 @@ bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD
         }
         if(n_in.dot(rayD_t)>0.0f)n_in=-n_in;
         if(n_out.dot(rayD_t)<0.0f)n_out=-n_out;
-        normalsMap[t_in]=origin_transform.linear() * n_in;
-        normalsMap[t_out]=origin_transform.linear() * n_out;
+        n_in=origin_transform.linear() * n_in;
+        n_out=origin_transform.linear() * n_out;
+
+        interior = DisjointIntervals({{t_in, t_out, n_in, n_out}});
     }else{
         return false;
     }
@@ -123,17 +112,18 @@ CSG_Cylinder::CSG_Cylinder(Eigen::Vector3f center, Eigen::Vector3f direction, fl
 
 }
 
-void CSG_Cylinder::getBoundingBox(float min[3], float max[3])const
+Eigen::AlignedBox3f CSG_Cylinder::getBoundingBox()const
 {
-    min[0]=std::min(top_center[0]-radius, bottom_center[0]-radius);
-    min[1]=std::min(top_center[0]-radius, bottom_center[0]-radius);
-    min[2]=std::min(top_center[0]-radius, bottom_center[0]-radius);
-    max[0]=std::max(top_center[0]+radius, bottom_center[0]+radius);
-    max[1]=std::max(top_center[0]+radius, bottom_center[0]+radius);
-    max[2]=std::max(top_center[0]+radius, bottom_center[0]+radius);
+    Eigen::Vector3f rrr = {radius,radius,radius};
+    Eigen::AlignedBox3f box;
+    box.extend(top_center + rrr);
+    box.extend(top_center - rrr);
+    box.extend(bottom_center + rrr);
+    box.extend(bottom_center - rrr);
+    return box;
 }
 
-bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap)const
+bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior)const
 {
     Eigen::Vector3f dp = rayO - center;
     float A = (rayD - rayD.dot(direction) * direction).squaredNorm();
@@ -189,9 +179,7 @@ bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f 
     }
 
     if(t_in <= 0.0f) t_in=DisjointIntervals::NEG_INF;
-    interior = DisjointIntervals({{t_in, t_out}});
-    normalsMap[t_in] = n_in;
-    normalsMap[t_out] = n_out;
+    interior = DisjointIntervals({{t_in, t_out, n_in, n_out}});
     return true;
 }
 
@@ -200,43 +188,28 @@ void EigenToArray(const Eigen::Vector3f &v, float a[3])
     a[0]=v[0]; a[1]=v[1]; a[2]=v[2];
 }
 
-bool CSG_Union::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap) const
+bool CSG_Union::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const
 {
     bool r = false;
-    NormalsMap normalsMapUnion;
     for(auto obj : objects){
-        NormalsMap normalsMap_;
         DisjointIntervals interior_;
-        if(obj->rayIntersectIntervals(rayO, rayD, interior_, normalsMap_)){
-            normalsMapUnion.insert(normalsMap_.begin(), normalsMap_.end());
+        if(obj->rayIntersectIntervals(rayO, rayD, interior_)){
             interior.unionWith(interior_);
             r = true;
         }
-    }
-    normalsMap.clear();
-    auto end = interior.end();
-    for(auto it = interior.begin(); it != end; it++){
-        normalsMap[it->left] = normalsMapUnion[it->left];
-        normalsMap[it->right] = normalsMapUnion[it->right];
     }
 
     return r;
 }
 
-void CSG_Union::getBoundingBox(float min[3], float max[3])const
+Eigen::AlignedBox3f CSG_Union::getBoundingBox()const
 {
-    min[0]=min[1]=min[2]=std::numeric_limits<float>::max();
-    max[0]=max[1]=max[2]=std::numeric_limits<float>::min();
+    Eigen::AlignedBox3f box;
     for(auto obj : objects){
-        float min_[3]; float max_[3];
-        obj->getBoundingBox(min, max);
-        min[0]=std::min(min[0],min_[0]);
-        min[1]=std::min(min[1],min_[1]);
-        min[2]=std::min(min[2],min_[2]);
-        max[0]=std::max(max[0],max_[0]);
-        max[1]=std::max(max[1],max_[1]);
-        max[2]=std::max(max[2],max_[2]);
+        Eigen::AlignedBox3f box_=obj->getBoundingBox();
+        box.extend(box_);
     }
+    return box;
 }
 
 CSG_Union::CSG_Union(std::vector<std::shared_ptr<CSG> > &objects)
@@ -250,25 +223,24 @@ bool CSG::rayIntersect(Eigen::Vector3f &rayO,
                        IntersectReport& report) const
 {
     DisjointIntervals interior;
-    NormalsMap normalMaps;
-    bool r = rayIntersectIntervals(rayO,rayD,interior,normalMaps);
+    bool r = rayIntersectIntervals(rayO,rayD,interior);
     if(!r) return false;
     auto end = interior.end();
     report.t=0.0;
     for(auto it = interior.begin();it!=end;it++){
         if(it->left > 0.0f){
             report.t = it->left;
+            report.normal = it->normalLeft;
             break;
         }
         if(it->right > 0.0f){
             report.t = it->right;
+            report.normal = it->normalRight;
             break;
         }
     }
     if(report.t==0.0) throw std::logic_error("t should be positive here!");
-    auto it = normalMaps.find(report.t);
-    if(it == normalMaps.end()) throw std::logic_error("should find a normal here!");
-    report.normal = it->second;
+
     report.intersect_point = rayO + rayD * report.t;
     return true;
 }
@@ -279,46 +251,35 @@ CSG_Intersection::CSG_Intersection(std::vector<std::shared_ptr<CSG> > &objects)
 
 }
 
-void CSG_Intersection::getBoundingBox(float min[], float max[]) const
+Eigen::AlignedBox3f CSG_Intersection::getBoundingBox() const
 {
-    min[0]=min[1]=min[2]=std::numeric_limits<float>::min();
-    max[0]=max[1]=max[2]=std::numeric_limits<float>::max();
+    Eigen::AlignedBox3f box;
+    bool first = true;
     for(auto obj : objects){
-        float min_[3]; float max_[3];
-        obj->getBoundingBox(min, max);
-        min[0]=std::max(min[0],min_[0]);
-        min[1]=std::max(min[1],min_[1]);
-        min[2]=std::max(min[2],min_[2]);
-        max[0]=std::min(max[0],max_[0]);
-        max[1]=std::min(max[1],max_[1]);
-        max[2]=std::min(max[2],max_[2]);
+        if(first){
+            box = obj->getBoundingBox();
+            first = false;
+        }else{
+            Eigen::AlignedBox3f box_=obj->getBoundingBox();
+            box.clamp(box_);
+        }
     }
+    return box;
 }
 
-bool CSG_Intersection::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap) const
+bool CSG_Intersection::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const
 {
-    std::cout<<"here1"<<std::endl;
     bool r = false;
-    NormalsMap normalsMapUnion;
     interior = DisjointIntervals::all();
     for(auto obj : objects){
-        NormalsMap normalsMap_;
         DisjointIntervals interior_;
-        if(obj->rayIntersectIntervals(rayO, rayD, interior_, normalsMap_)){
-            normalsMapUnion.insert(normalsMap_.begin(), normalsMap_.end());
+        if(obj->rayIntersectIntervals(rayO, rayD, interior_)){
             interior.intersectionWith(interior_);
             r = true;
         }else{
             return false;
         }
     }
-    std::cout<<"here------------------"<<std::endl;
-    normalsMap.clear();
-    auto end = interior.end();
-    for(auto it = interior.begin(); it != end; it++){
-        normalsMap[it->left] = normalsMapUnion[it->left];
-        normalsMap[it->right] = normalsMapUnion[it->right];
-    }
-
+    if(interior.begin()==interior.end()) r = false;
     return r;
 }

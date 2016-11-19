@@ -4,11 +4,13 @@
 #include <vector>
 #include <set>
 #include <limits>
+#include <Eigen/Dense>
 class DisjointIntervals
 {
 public:
     struct Interval{
         float left, right;
+        Eigen::Vector3f normalLeft, normalRight;
         bool operator<(Interval const & other) const;
         bool operator==(Interval const & other) const;
     };

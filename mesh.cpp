@@ -77,9 +77,13 @@ void Mesh::readPlyFile(const char *file)
     }
 }
 
-void Mesh::getBoundingBox(float min[3], float max[3]) const
+Eigen::AlignedBox3f Mesh::getBoundingBox() const
 {
-    return tree.GetBoundingBox(min,max);
+    float min[3], max[3];
+    tree.GetBoundingBox(min,max);
+    Eigen::Vector3f vmin = {min[0],min[1],min[2]};
+    Eigen::Vector3f vmax = {max[0],max[1],max[2]};
+    return Eigen::AlignedBox3f(vmin,vmax);
 }
 
 bool Mesh::rayIntersect(Vector3f &rayO, Vector3f &rayD, IntersectReport &report)const

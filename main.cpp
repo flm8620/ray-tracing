@@ -27,7 +27,7 @@ int main()
     m3.specular = false;
     m3.transparent = true;
     m3.mirror = true;
-    m3.relative_refractive_index = 5;
+    m3.relative_refractive_index = 1.1;
     //scene.addMeshFromPlyFile("/home/leman/Documents/lens2.ply", m3);
     //scene.addMeshFromPlyFile("/home/leman/Documents/lens3.ply", m3);
 
@@ -41,10 +41,12 @@ int main()
     m.transparent = false;
     scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
 
-    std::shared_ptr<CSG> sphere1(new CSG_Sphere(Eigen::Vector3f(0.0,-0.05,0.03), 0.02f));
-    std::shared_ptr<CSG> sphere2(new CSG_Sphere(Eigen::Vector3f(-0.02,-0.05,0.03), 0.02f));
+    std::shared_ptr<CSG> sphere1(new CSG_Sphere(Eigen::Vector3f(-0.03,-0.05,0.04), 0.02f));
+    std::shared_ptr<CSG> sphere2(new CSG_Sphere(Eigen::Vector3f(-0.03,-0.08,0.04), 0.02f));
     std::vector<std::shared_ptr<CSG>> spheres = {sphere1, sphere2};
     std::shared_ptr<CSG> lens(new CSG_Intersection(spheres));
+
+
     scene.addObject(lens, m3);
 
 

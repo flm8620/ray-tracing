@@ -23,7 +23,15 @@ void Scene::addMeshFromPlyFile(const char *file, Material &material)
 void Scene::addObject(std::shared_ptr<Intersectable> obj, Material &material)
 {
     float box_min[3],box_max[3];
-    obj->getBoundingBox(box_min,box_max);
+    Eigen::AlignedBox3f box;
+    box = obj->getBoundingBox();
+    Eigen::Vector3f vmin = box.min(), vmax=box.max();
+    box_min[0]=vmin[0];
+    box_min[1]=vmin[1];
+    box_min[2]=vmin[2];
+    box_max[0]=vmax[0];
+    box_max[1]=vmax[1];
+    box_max[2]=vmax[2];
 
     assert(objects.size() == objects_material.size());
     objectID id = objects.size();

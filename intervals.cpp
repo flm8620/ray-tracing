@@ -59,7 +59,7 @@ DisjointIntervals &DisjointIntervals::intersectionWith(DisjointIntervals const &
                 //      --[----]---
                 //      -----[---]-
                 // it2:      ^
-                Interval I = {it2->left, it1->right};
+                Interval I = {it2->left, it1->right, it2->normalLeft, it1->normalRight};
                 new_intervals.insert(new_intervals.end(), I);
                 it1++;
                 continue;
@@ -106,7 +106,10 @@ DisjointIntervals &DisjointIntervals::unionWith(DisjointIntervals const &other)
         // it2:     ^
 
         if(it1->left <= new_last.right){
-            new_last.right = std::max(it1->right,new_last.right);
+            if(it1->right>new_last.right){
+                new_last.right = it1->right;
+                new_last.normalRight = it1->normalRight;
+            }
             it1++;
             continue;
         }else{
@@ -128,8 +131,11 @@ DisjointIntervals& DisjointIntervals::inverse()
     new_last.left = NEG_INF;
     for(Interval const & I : intervals){
         new_last.right = I.left;
+        new_last.normalRight = -I.normalLeft;
         new_intervals.insert(new_intervals.end(), new_last);
+
         new_last.left = I.right;
+        new_last.normalLeft = -I.normalRight;
     }
     new_last.right = POS_INF;
     if(!intervals.empty()){
@@ -181,17 +187,22 @@ void DisjointIntervals::sanitize()
     auto it = this->intervals.cbegin();
     auto end = this->intervals.cend();
 
-    std::set<Interval> new_intervals;
     //if either is empty
     if(it==end){
         return;
     }
+
+    std::set<Interval> new_intervals;
+
     Interval new_last = *it;
     it++;
-
+    // union every non-disjoint interval
     while( it != end){
         if(it->left <= new_last.right){
-            new_last.right = std::max(it->right,new_last.right);
+            if(it->right>new_last.right){
+                new_last.right = it->right;
+                new_last.normalRight = it->normalRight;
+            }
             it++;
             continue;
         }else{
