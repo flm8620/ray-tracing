@@ -25,12 +25,12 @@ bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &r
     float sqd = CP.squaredNorm();
     if(sqd >= sq_radius) return false;
     float dt = std::sqrt(sq_radius - sqd);
-    float t_in = dt - t;
+    float t_in = -dt + t;
     float t_out = dt + t;
     if(t_out <= 0) return false;
-    Eigen::Vector3f n_in = (rayD * t_in + rayO) - rayO;
+    Eigen::Vector3f n_in = (rayD * t_in + rayO) - center;
     n_in.normalize();
-    Eigen::Vector3f n_out = (rayD * t_out + rayO) - rayO;
+    Eigen::Vector3f n_out = (rayD * t_out + rayO) - center;
     n_out.normalize();
     if(t_in<0) t_in = DisjointIntervals::NEG_INF;
     normalsMap[t_in]=n_in;
@@ -194,7 +194,7 @@ bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f 
     return true;
 }
 
-void EigenToArray(Eigen::Vector3f &v, float a[3])
+void EigenToArray(const Eigen::Vector3f &v, float a[3])
 {
     a[0]=v[0]; a[1]=v[1]; a[2]=v[2];
 }
@@ -202,15 +202,23 @@ void EigenToArray(Eigen::Vector3f &v, float a[3])
 bool CSG_Union::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior, NormalsMap &normalsMap) const
 {
     bool r = false;
+    NormalsMap normalsMapUnion;
     for(auto obj : objects){
         NormalsMap normalsMap_;
         DisjointIntervals interior_;
         if(obj->rayIntersectIntervals(rayO, rayD, interior_, normalsMap_)){
-            normalsMap.insert(normalsMap_.begin(), normalsMap_.end());
+            normalsMapUnion.insert(normalsMap_.begin(), normalsMap_.end());
             interior.unionWith(interior_);
             r = true;
         }
     }
+    normalsMap.clear();
+    auto end = interior.end();
+    for(auto it = interior.begin(); it != end; it++){
+        normalsMap[it->left] = normalsMapUnion[it->left];
+        normalsMap[it->right] = normalsMapUnion[it->right];
+    }
+
     return r;
 }
 

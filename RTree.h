@@ -129,7 +129,9 @@ public:
     /// Save tree contents to stream
     bool Save(RTFileStream& a_stream);
     /// return tree structure
-    void GetTreeStructure(std::vector<std::pair<Rect,int>>& boxes, int& total_depth, int depth_limit = -1);
+    void GetTreeStructure(std::vector<std::pair<Rect,int>>& boxes, int& total_depth, int depth_limit = -1)const;
+    /// return bounding box
+    void GetBoundingBox(ELEMTYPE a_min[NUMDIMS], ELEMTYPE a_max[NUMDIMS]) const;
 
 
 
@@ -373,7 +375,7 @@ protected:
     void ReInsert(Node* a_node, ListNode** a_listNode);
     bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
     bool Search_user_defined(Node* a_node, void* a_userData, intersect_test a_intersectTest, int& a_foundCount, t_resultCallback a_resultCallback, void* a_context) const;
-    void GetStructureRecursive(std::vector<std::pair<Rect,int>>& boxes, Node* node, int depth, int& total_depth, int max_depth = -1);
+    void GetStructureRecursive(std::vector<std::pair<Rect,int>>& boxes, Node* node, int depth, int& total_depth, int max_depth = -1)const;
     void RemoveAllRec(Node* a_node);
     void Reset();
     void CountRec(Node* a_node, int& a_count);
@@ -752,9 +754,28 @@ bool RTREE_QUAL::Save(RTFileStream& a_stream)
 }
 
 RTREE_TEMPLATE
-void RTREE_QUAL::GetTreeStructure(std::vector<std::pair<Rect,int>> &boxes, int &total_depth, int depth_limit)
+void RTREE_QUAL::GetTreeStructure(std::vector<std::pair<Rect,int>> &boxes, int &total_depth, int depth_limit) const
 {
-    GetStructureRecursive(boxes,m_root, 0, total_depth, depth_limit);
+    GetStructureRecursive(boxes, m_root, 0, total_depth, depth_limit);
+}
+
+RTREE_TEMPLATE
+void RTREE_QUAL::GetBoundingBox(ELEMTYPE a_min[NUMDIMS], ELEMTYPE a_max[NUMDIMS])const
+{
+    ASSERT(m_root);
+    for(int d=0;d<NUMDIMS;d++){
+        a_min[d] = std::numeric_limits<ELEMTYPE>::max();
+        a_max[d] = std::numeric_limits<ELEMTYPE>::min();
+    }
+    for(int index=0; index < m_root->m_count; ++index)
+    {
+        Rect &rect = m_root->m_branch[index].m_rect;
+        for(int d=0;d<NUMDIMS;d++){
+            a_min[d] = std::min(a_min[d],rect.m_min[d]);
+            a_max[d] = std::max(a_max[d],rect.m_max[d]);
+        }
+    }
+
 }
 
 
@@ -1675,7 +1696,7 @@ bool RTREE_QUAL::Search_user_defined(Node *a_node, void *a_userData, intersect_t
     return true; // Continue searching
 }
 RTREE_TEMPLATE
-void RTREE_QUAL::GetStructureRecursive(std::vector<std::pair<Rect, int> > &boxes, RTree::Node *node, int depth, int& total_depth, int max_depth_limit)
+void RTREE_QUAL::GetStructureRecursive(std::vector<std::pair<Rect, int> > &boxes, RTree::Node *node, int depth, int& total_depth, int max_depth_limit) const
 {
     ASSERT(node);
     ASSERT(node->m_level >= 0);

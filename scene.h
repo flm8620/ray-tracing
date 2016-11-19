@@ -10,6 +10,7 @@
 #include "RTree.h"
 #include "geometry_util.h"
 #include "mesh.h"
+#include "csg.h"
 
 struct Material{
     float diffuse_coeff;
@@ -51,10 +52,11 @@ struct Lights{
 class Scene
 {
     typedef unsigned int objectID;
+    typedef unsigned int materialID;
     std::vector<std::shared_ptr<Intersectable>> objects;
 
     std::vector<Material> materials;
-    std::vector<unsigned int> face_material;
+    std::vector<materialID> objects_material;
 
     typedef RTree<objectID, float, 3, float> MyTree;
     MyTree tree;
@@ -64,10 +66,11 @@ class Scene
 public:
 
     Scene();
-    void addMeshFromPlyFile(const char* file);
+    void addMeshFromPlyFile(const char* file, Material& material);
+    void addObject(std::shared_ptr<Intersectable> obj, Material &material);
     void addSunshine(Sunshine s);
     std::vector<Sunshine> getSunshines()const{return lights.sunshines;}
-
+    bool ray_intersect_query(Eigen::Vector3f& rayO, Eigen::Vector3f& rayD, IntersectReport& report, Material &material)const;
     void setAmbientIntensity(float I);
     float getAmbientIntensity()const;
     Lights getAllLights()const;

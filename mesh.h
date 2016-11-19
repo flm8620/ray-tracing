@@ -36,7 +36,7 @@ private:
 public:
     Mesh();
     void readPlyFile(const char* file);
-    virtual void getBoundingBox(float min[3],float max[3]) const;
+    virtual void getBoundingBox(float min[3],float max[3]) const override;
     virtual bool rayIntersect(Eigen::Vector3f& rayO,
                                Eigen::Vector3f& rayD,
                                IntersectReport& report)const override;

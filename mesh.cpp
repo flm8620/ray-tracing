@@ -77,9 +77,9 @@ void Mesh::readPlyFile(const char *file)
     }
 }
 
-void Mesh::getBoundingBox(float min[], float max[]) const
+void Mesh::getBoundingBox(float min[3], float max[3]) const
 {
-
+    return tree.GetBoundingBox(min,max);
 }
 
 bool Mesh::rayIntersect(Vector3f &rayO, Vector3f &rayD, IntersectReport &report)const
@@ -142,6 +142,7 @@ bool Mesh::rayIntersect(Vector3f &rayO, Vector3f &rayD, IntersectReport &report)
             report.normal.normalize();
             //report->normal = face_normals[id];
             report.intersect_point = closest_intersect_point;
+            report.t = distance;
             return true;
         }
     }

@@ -9,7 +9,7 @@ class Render
 {
     Lights lights;
 
-    float getIntensity(const Scene& scene, Ray& ray, int reflexLeft);
+    float getIntensity(const Scene& scene, Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, int reflexLeft);
     float phongShading(const Eigen::Vector3f& n,
                                  const Eigen::Vector3f& view,
                                  const Eigen::Vector3f& light,

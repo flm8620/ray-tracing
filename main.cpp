@@ -27,9 +27,9 @@ int main()
     m3.specular = false;
     m3.transparent = true;
     m3.mirror = true;
-    m3.relative_refractive_index = 1.6;
-    scene.readPlyFile("/home/leman/Documents/lens2.ply", m3);
-    scene.readPlyFile("/home/leman/Documents/lens3.ply", m3);
+    m3.relative_refractive_index = 5;
+    //scene.addMeshFromPlyFile("/home/leman/Documents/lens2.ply", m3);
+    //scene.addMeshFromPlyFile("/home/leman/Documents/lens3.ply", m3);
 
 
     Material m;
@@ -39,8 +39,10 @@ int main()
     m.mirror = false;
     m.specular = false;
     m.transparent = false;
-    scene.readPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
+    scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
 
+    std::shared_ptr<Intersectable> sphere(new CSG_Sphere(Eigen::Vector3f(-0.09,-0.02,0.03), 0.02f));
+    scene.addObject(sphere, m3);
 
 
     //scene.exportRTreeToPly("rtree.ply");
@@ -51,7 +53,7 @@ int main()
     m2.specular_coeff = 0.8;
     m2.specular = false;
     m2.mirror = true;
-    scene.readPlyFile("/home/leman/Documents/plan.ply", m2);
+    scene.addMeshFromPlyFile("/home/leman/Documents/plan.ply", m2);
 
 
 
@@ -63,7 +65,7 @@ int main()
 
     sun.direction=Eigen::Vector3f(1.0,1.0,1.0);
     sun.intensity=0.2;
-    scene.addSunshine(sun);
+    //scene.addSunshine(sun);
 
     scene.setAmbientIntensity(0.05);
 
