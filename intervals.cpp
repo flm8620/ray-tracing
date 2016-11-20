@@ -138,6 +138,7 @@ DisjointIntervals& DisjointIntervals::inverse()
         new_last.normalLeft = -I.normalRight;
     }
     new_last.right = POS_INF;
+    new_intervals.insert(new_intervals.end(), new_last);
     if(!intervals.empty()){
         if(intervals.begin()->left==NEG_INF){
             new_intervals.erase(new_intervals.begin());

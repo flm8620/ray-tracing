@@ -57,7 +57,7 @@ Eigen::AlignedBox3f CSG_Box::getBoundingBox()const
         for(auto & v1 : {size_min, size_max} ){
             for(auto & v2 : {size_min, size_max} ){
                 Eigen::Vector3f v(v0[0],v1[1],v2[2]);
-                v = origin_transform.linear() * v;
+                v = origin_transform * v;
                 box.extend(v);
             }
         }
@@ -293,4 +293,30 @@ bool CSG_Intersection::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vecto
     }
     if(interior.begin()==interior.end()) r = false;
     return r;
+}
+
+CSG_Difference::CSG_Difference(std::shared_ptr<CSG> object1, std::shared_ptr<CSG> object2)
+    :object1(object1), object2(object2)
+{
+
+}
+
+Eigen::AlignedBox3f CSG_Difference::getBoundingBox() const
+{
+    return object1->getBoundingBox();
+}
+
+bool CSG_Difference::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const
+{
+    if(object1->rayIntersectIntervals(rayO, rayD, interior)){
+        DisjointIntervals interior2;
+        if(object2->rayIntersectIntervals(rayO, rayD, interior2)){
+            interior2.inverse();
+            interior.intersectionWith(interior2);
+        }
+        if(interior.begin()==interior.end()) return false;
+        return true;
+    }else{
+        return false;
+    }
 }

@@ -25,6 +25,7 @@ void Scene::addObject(std::shared_ptr<Intersectable> obj, Material &material)
     float box_min[3],box_max[3];
     Eigen::AlignedBox3f box;
     box = obj->getBoundingBox();
+    if(box.isEmpty()) return;
     Eigen::Vector3f vmin = box.min(), vmax=box.max();
     box_min[0]=vmin[0];
     box_min[1]=vmin[1];

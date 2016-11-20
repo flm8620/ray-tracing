@@ -45,11 +45,9 @@ TEST(intervals,union_intersect){
     G.unionWith(J);
     EXPECT_EQ(G,DisjointIntervals({{5.5,7.5}}));
 
-    EXPECT_EQ(A,A.inverse().inverse());
-    EXPECT_EQ(B,B.inverse().inverse());
-    EXPECT_EQ(C,C.inverse().inverse());
-    EXPECT_EQ(D,D.inverse().inverse());
-    EXPECT_EQ(E,E.inverse().inverse());
-    EXPECT_EQ(F,F.inverse().inverse());
-    EXPECT_EQ(G,G.inverse().inverse());
+    for(auto &j : {A,B,C,D,E,F,G}){
+        auto j_invinv = j;
+        j_invinv.inverse().inverse();
+        EXPECT_EQ(j,j_invinv);
+    }
 }

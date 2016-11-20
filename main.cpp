@@ -40,21 +40,40 @@ int main()
     m.mirror = false;
     m.specular = false;
     m.transparent = false;
-    scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
+    //scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
 
     std::shared_ptr<CSG> sphere1(new CSG_Sphere(Vector3f(-0.03,-0.05,0.04), 0.02f));
     std::shared_ptr<CSG> sphere2(new CSG_Sphere(Vector3f(-0.03,-0.08,0.04), 0.02f));
     std::vector<std::shared_ptr<CSG>> spheres = {sphere1, sphere2};
     std::shared_ptr<CSG> lens(new CSG_Intersection(spheres));
 
-    std::shared_ptr<CSG> cylinder(new CSG_Cylinder(Vector3f(-0.03,-0.05,0.04),
-                                                   Vector3f(1.0,0.0,1.0),
-                                                   0.02,
-                                                   0.0,
-                                                   0.03));
-    std::shared_ptr<CSG> box(new CSG_Box(Vector3f(-0.03,-0.05,0.04),
-                                         Vector3f(-0.02,-0.04,0.05)));
-    scene.addObject(box, m);
+    float radius = 0.04;
+    float length = 0.2;
+    std::shared_ptr<CSG> cylinder1(new CSG_Cylinder(Vector3f(0.0,0.0,0.0),
+                                                   Vector3f(0.0,0.0,1.0),
+                                                   radius,
+                                                   -length,
+                                                   length));
+    std::shared_ptr<CSG> cylinder2(new CSG_Cylinder(Vector3f(0.0,0.0,0.0),
+                                                   Vector3f(0.0,1.0,0.0),
+                                                   radius,
+                                                   -length,
+                                                   length));
+    std::shared_ptr<CSG> cylinder3(new CSG_Cylinder(Vector3f(0.0,0.0,0.0),
+                                                   Vector3f(1.0,0.0,0.0),
+                                                   radius,
+                                                   -length,
+                                                   length));
+    std::vector<std::shared_ptr<CSG>> c3 = {cylinder1,cylinder2,cylinder3};
+    std::shared_ptr<CSG> cylinders(new CSG_Union(c3));
+    Transform<float,3,Eigen::Affine> trans = Transform<float,3,Eigen::Affine>::Identity();
+    trans.translate(Vector3f(0.0,0.0,-0.03));
+    std::shared_ptr<CSG> box(new CSG_Box(Vector3f(-0.05,-0.05,-0.05),
+                                         Vector3f(0.05,0.05,0.05),
+                                         trans));
+
+    std::shared_ptr<CSG> hole(new CSG_Difference(box,cylinders));
+    scene.addObject(hole, m);
 
 
     //scene.exportRTreeToPly("rtree.ply");
@@ -65,26 +84,26 @@ int main()
     m2.specular_coeff = 0.8;
     m2.specular = false;
     m2.mirror = true;
-    scene.addMeshFromPlyFile("/home/leman/Documents/plan.ply", m2);
+    //scene.addMeshFromPlyFile("/home/leman/Documents/plan.ply", m2);
 
 
 
 
     Sunshine sun;
-    sun.direction=Vector3f(0.0,0.0,-1.0);
+    sun.direction=Vector3f(-0.3,-0.3,-1.0);
     sun.intensity=0.8;
     scene.addSunshine(sun);
 
     sun.direction=Vector3f(1.0,1.0,1.0);
-    sun.intensity=0.2;
-    //scene.addSunshine(sun);
+    sun.intensity=0.4;
+    scene.addSunshine(sun);
 
     scene.setAmbientIntensity(0.05);
 
 
     Camera cam(800,600,600);
-    cam.setPosition(Vector3f(0.0,-0.20,0.06));
-    cam.lookAt(Vector3f(-0.05,0.0,0.03));
+    cam.setPosition(Vector3f(0.04,-0.15,0.15));
+    cam.lookAt(Vector3f(0.0,0.0,0.0));
     cam.height=800; cam.width=1000;
     cam.focal=600;
 

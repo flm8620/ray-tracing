@@ -45,6 +45,18 @@ public:
                                        DisjointIntervals& interior) const override;
 };
 
+class CSG_Difference : public CSG{
+    std::shared_ptr<CSG> object1;
+    std::shared_ptr<CSG> object2;
+
+public:
+    CSG_Difference(std::shared_ptr<CSG> object1, std::shared_ptr<CSG> object2);
+    virtual Eigen::AlignedBox3f getBoundingBox()const override;
+    virtual bool rayIntersectIntervals(Eigen::Vector3f& rayO,
+                                       Eigen::Vector3f& rayD,
+                                       DisjointIntervals& interior) const override;
+};
+
 class CSG_Geometric : public CSG{
 };
 
