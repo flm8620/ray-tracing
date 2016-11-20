@@ -25,3 +25,9 @@ Day 7
 ![Day7](image/Day7.png)
 ![Day7.5](image/Day7.5.png)
 
+Day 8
+![Day8](image/Day8.png)
+![Day8.1](image/Day8.1.png)
+![Day8.2](image/Day8.2.png)
+![Day8.3](image/Day8.3.png)
+
