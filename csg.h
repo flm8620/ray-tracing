@@ -27,7 +27,7 @@ class CSG_Union : public CSG{
     std::vector<std::shared_ptr<CSG> > objects;
 
 public:
-    CSG_Union(std::vector<std::shared_ptr<CSG> >& objects);
+    CSG_Union(std::vector<std::shared_ptr<CSG> > objects);
     virtual Eigen::AlignedBox3f getBoundingBox()const override;
     virtual bool rayIntersectIntervals(Eigen::Vector3f& rayO,
                                        Eigen::Vector3f& rayD,
@@ -38,7 +38,7 @@ class CSG_Intersection : public CSG{
     std::vector<std::shared_ptr<CSG> > objects;
 
 public:
-    CSG_Intersection(std::vector<std::shared_ptr<CSG> >& objects);
+    CSG_Intersection(std::vector<std::shared_ptr<CSG> > objects);
     virtual Eigen::AlignedBox3f getBoundingBox()const override;
     virtual bool rayIntersectIntervals(Eigen::Vector3f& rayO,
                                        Eigen::Vector3f& rayD,

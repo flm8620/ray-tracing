@@ -223,7 +223,7 @@ Eigen::AlignedBox3f CSG_Union::getBoundingBox()const
     return box;
 }
 
-CSG_Union::CSG_Union(std::vector<std::shared_ptr<CSG> > &objects)
+CSG_Union::CSG_Union(std::vector<std::shared_ptr<CSG> > objects)
     :objects(objects)
 {
 
@@ -250,13 +250,14 @@ bool CSG::rayIntersect(Eigen::Vector3f &rayO,
             break;
         }
     }
-    if(report.t==0.0) throw std::logic_error("t should be positive here!");
+    //if(report.t==0.0) throw std::logic_error("t should be positive here!");
+    if(report.t==0.0) return false;
 
     report.intersect_point = rayO + rayD * report.t;
     return true;
 }
 
-CSG_Intersection::CSG_Intersection(std::vector<std::shared_ptr<CSG> > &objects)
+CSG_Intersection::CSG_Intersection(std::vector<std::shared_ptr<CSG> > objects)
     : objects(objects)
 {
 
