@@ -110,11 +110,11 @@ float Render::phongShading(const Vector3f &n, const Vector3f &view, const Vector
     return intensity;
 }
 
-QImage Render::renderImage(const Camera &cam, const Scene &scene) {
+cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     float H = cam.height, W = cam.width, focal = cam.focal;
 
     float center_x = W / 2, center_y = H / 2;
-    QImage image(W, H, QImage::Format_RGB32);
+    cv::Mat image(H, W, CV_8UC3);
     lights = scene.getAllLights();
     Vector3f o(cam.x(), cam.y(), cam.z());
     for (int i = 0; i < H; i++) {
@@ -129,7 +129,7 @@ QImage Render::renderImage(const Camera &cam, const Scene &scene) {
 
             float intensity = getIntensity(scene, o, v, 5);
             intensity = std::max<float>(std::min<float>(intensity, 1.0f), 0.0f);
-            image.setPixel(j, i, qRgb(255 * intensity, 255 * intensity, 255 * intensity));
+            image.at<cv::Vec3b>(i, j) = cv::Vec3b(255 * intensity, 255 * intensity, 255 * intensity);
         }
     }
     return image;

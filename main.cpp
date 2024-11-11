@@ -2,7 +2,7 @@
 #include <vector>
 #include <ctime>
 
-#include <QImage>
+#include <opencv2/opencv.hpp>
 
 #include "camera.h"
 #include "scene.h"
@@ -117,9 +117,9 @@ int main() {
     cam.focal = 600;
 
     Render render;
-    QImage image = render.renderImage(cam, scene);
+    cv::Mat image = render.renderImage(cam, scene);
 
-    image.save("saved.png");
+    cv::imwrite("saved.png", image);
 
     return 0;
 }

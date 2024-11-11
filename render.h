@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QImage>
+#include <opencv2/opencv.hpp>
 
 #include "camera.h"
 #include "scene.h"
@@ -17,5 +17,5 @@ class Render {
 
   public:
     Render();
-    QImage renderImage(const Camera &cam, const Scene &scene);
+    cv::Mat renderImage(const Camera &cam, const Scene &scene);
 };
