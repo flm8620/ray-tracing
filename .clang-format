@@ -1,0 +1,6 @@
+---
+IndentWidth: 4
+Language: Cpp
+ColumnLimit: 0
+SortIncludes: false
+MaxEmptyLinesToKeep: 2
