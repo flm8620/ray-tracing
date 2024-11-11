@@ -1,18 +1,15 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
 
 #include <vector>
-#include <array>
 #include <memory>
+
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 
+#include "intersectable.h"
 #include "RTree.h"
-#include "geometry_util.h"
-#include "mesh.h"
-#include "csg.h"
 
-struct Material{
+struct Material {
     float diffuse_coeff;
     float specular_coeff;
     float alpha_phong;
@@ -20,7 +17,7 @@ struct Material{
     bool mirror;
     bool specular;
     float relative_refractive_index;
-    Material(){
+    Material() {
         diffuse_coeff = 0.5;
         specular_coeff = 0.5;
         alpha_phong = 2.0;
@@ -29,28 +26,27 @@ struct Material{
         specular = false;
         relative_refractive_index = 1.33;
     }
-
 };
 
-struct Sunshine{
+struct Sunshine {
     Eigen::Vector3f direction;
     float intensity;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
-struct PointLight{
+
+struct PointLight {
     Eigen::Vector3f pos;
     float intensity;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-struct Lights{
+struct Lights {
     std::vector<Sunshine> sunshines;
     std::vector<PointLight> pointLights;
     float ambientIntensity;
 };
 
-class Scene
-{
+class Scene {
     typedef unsigned int objectID;
     typedef unsigned int materialID;
     std::vector<std::shared_ptr<Intersectable>> objects;
@@ -63,19 +59,16 @@ class Scene
 
     Lights lights;
 
-public:
-
+  public:
     Scene();
-    void addMeshFromPlyFile(const char* file, Material& material);
+    void addMeshFromPlyFile(const char *file, Material &material);
     void addObject(std::shared_ptr<Intersectable> obj, Material &material);
     void addSunshine(Sunshine s);
-    std::vector<Sunshine> getSunshines()const{return lights.sunshines;}
-    bool ray_intersect_query(Eigen::Vector3f& rayO, Eigen::Vector3f& rayD, IntersectReport& report, Material &material)const;
+    std::vector<Sunshine> getSunshines() const { return lights.sunshines; }
+    bool ray_intersect_query(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, IntersectReport &report, Material &material) const;
     void setAmbientIntensity(float I);
-    float getAmbientIntensity()const;
-    Lights getAllLights()const;
-    void exportRTreeToPly(const char * file);
+    float getAmbientIntensity() const;
+    Lights getAllLights() const;
+    void exportRTreeToPly(const char *file);
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
-
-#endif // SCENE_H

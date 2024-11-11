@@ -18,7 +18,6 @@ add_executable(${PROJECT_NAME}
   RTree.h 
   ray_slab.h 
   geometry_util.h 
-  geometry_util.cpp 
   camera.h 
   camera.cpp
   render.h 
@@ -28,7 +27,6 @@ add_executable(${PROJECT_NAME}
   intervals.cpp 
   intervals.h 
   intersectable.h 
-  intersectable.cpp
   mesh.h 
   mesh.cpp 
   csg.h 
