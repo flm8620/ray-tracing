@@ -46,9 +46,5 @@ COPY install_opencv4.sh pkg_source/opencv-4.10.0.tar.gz /home/${USER_NAME}/
 
 RUN bash /home/${USER_NAME}/install_opencv4.sh
 
-COPY install-clangd-18.sh /pkg_source/
-
-RUN bash /pkg_source/install-clangd-18.sh
-
 # Set the default command for the container
 CMD ["bash"]

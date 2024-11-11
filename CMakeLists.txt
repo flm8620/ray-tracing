@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
 
@@ -32,7 +32,7 @@ add_executable(${PROJECT_NAME}
   csg.h 
   csg.cpp
 )
-target_link_libraries(${PROJECT_NAME} Qt5::Widgets Eigen3::Eigen ply_reader)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Eigen3::Eigen ply_reader)
 
 
 enable_testing()
@@ -40,7 +40,7 @@ enable_testing()
 add_executable(runUnitTests test.cpp)
 add_executable(testInterval test_interval.cpp intervals.h intervals.cpp)
 
-target_link_libraries(runUnitTests PRIVATE GTest::GTest GTest::Main Qt5::Widgets)
+target_link_libraries(runUnitTests PRIVATE GTest::GTest GTest::Main ${OpenCV_LIBS})
 target_link_libraries(testInterval PRIVATE GTest::GTest GTest::Main Eigen3::Eigen)
 
 add_test(NAME test COMMAND runUnitTests)

@@ -19,7 +19,7 @@ USER_NAME=$(id -un)
 
 # Define the tag for your image
 IMAGE_NAME="raytracing-dev"
-IMAGE_TAG="v1"
+IMAGE_TAG="v2"
 CONTAINER_NAME="$USER_NAME-$IMAGE_NAME-$IMAGE_TAG"
 
 # Build the Docker image

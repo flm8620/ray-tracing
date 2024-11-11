@@ -18,5 +18,5 @@ cmake .. \
   -DBUILD_TESTS=OFF \
   -DWITH_VTK=OFF \
 
-make -j 4
-
+make -j 8
+sudo make install
