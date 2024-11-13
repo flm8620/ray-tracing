@@ -6,9 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(OpenMP REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
+
+set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Debug)
 
 
 add_subdirectory(lib/rply)
@@ -32,7 +36,8 @@ add_executable(${PROJECT_NAME}
   csg.h 
   csg.cpp
 )
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Eigen3::Eigen ply_reader)
+target_compile_options(${PROJECT_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Eigen3::Eigen ply_reader OpenMP::OpenMP_CXX)
 
 
 enable_testing()

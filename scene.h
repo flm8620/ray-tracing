@@ -10,22 +10,13 @@
 #include "RTree.h"
 
 struct Material {
-    float diffuse_coeff;
-    float specular_coeff;
-    float alpha_phong;
-    bool transparent;
-    bool mirror;
-    bool specular;
-    float relative_refractive_index;
-    Material() {
-        diffuse_coeff = 0.5;
-        specular_coeff = 0.5;
-        alpha_phong = 2.0;
-        transparent = false;
-        mirror = false;
-        specular = false;
-        relative_refractive_index = 1.33;
-    }
+    float diffuse_coeff = 0.5;
+    float specular_coeff = 0.5;
+    float alpha_phong = 2.0;
+    bool transparent = false;
+    bool mirror = false;
+    bool specular = false;
+    float relative_refractive_index = 1.33;
 };
 
 struct Sunshine {
