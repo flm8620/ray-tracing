@@ -2,3 +2,4 @@
 devdocker/docker_build/pkg_source
 build/
 .cache/
+.vscode/

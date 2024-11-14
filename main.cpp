@@ -58,24 +58,13 @@ int main() {
                                                     length);
     std::vector<std::shared_ptr<CSG>> c3 = {cylinder1, cylinder2, cylinder3};
     auto cylinders = std::make_shared<CSG_Union>(c3);
-    auto cylinders_inter = std::make_shared<CSG_Intersection>(c3);
     Transform<float, 3, Eigen::Affine> trans = Transform<float, 3, Eigen::Affine>::Identity();
     // trans.translate(Vector3f(0.0,0.0,-0.03));
     float boxsize = 0.05;
     float dx = 0.01;
-    auto box1 = std::make_shared<CSG_Box>(Vector3f(-boxsize - dx, -boxsize + dx, -boxsize + dx),
-                                          Vector3f(boxsize + dx, boxsize - dx, boxsize - dx),
-                                          trans);
-    auto box2 = std::make_shared<CSG_Box>(Vector3f(-boxsize + dx, -boxsize - dx, -boxsize + dx),
-                                          Vector3f(boxsize - dx, boxsize + dx, boxsize - dx),
-                                          trans);
-    auto box3 = std::make_shared<CSG_Box>(Vector3f(-boxsize + dx, -boxsize + dx, -boxsize - dx),
-                                          Vector3f(boxsize - dx, boxsize - dx, boxsize + dx),
-                                          trans);
     auto box = std::make_shared<CSG_Box>(Vector3f(-boxsize, -boxsize, -boxsize),
                                          Vector3f(boxsize, boxsize, boxsize),
                                          trans);
-    auto box_union = std::make_shared<CSG_Union>(std::vector<std::shared_ptr<CSG>>{box1, box2, box3});
     auto box_sph = std::make_shared<CSG_Intersection>(std::vector<std::shared_ptr<CSG>>{box, sphere1});
     auto hole = std::make_shared<CSG_Difference>(box_sph, cylinders);
     scene.addObject(hole, m3);
@@ -86,7 +75,7 @@ int main() {
 
     // scene.addObject(sphere3, m3);
     // scene.addObject(sphere4, m3);
-    // scene.exportRTreeToPly("rtree.ply");
+    // exportRTreeToPly(scene.getTree(), "rtree.ply");
     // return 0;
 
     Material m2;

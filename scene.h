@@ -7,7 +7,7 @@
 #include <Eigen/StdVector>
 
 #include "intersectable.h"
-#include "RTree.h"
+#include "rtree_util.h"
 
 struct Material {
     float diffuse_coeff = 0.5;
@@ -45,13 +45,13 @@ class Scene {
     std::vector<Material> materials;
     std::vector<materialID> objects_material;
 
-    typedef RTree<objectID, float, 3, float> MyTree;
     MyTree tree;
 
     Lights lights;
 
   public:
     Scene();
+    const MyTree& getTree() const { return tree; }
     void addMeshFromPlyFile(const char *file, Material &material);
     void addObject(std::shared_ptr<Intersectable> obj, Material &material);
     void addSunshine(Sunshine s);
@@ -60,6 +60,5 @@ class Scene {
     void setAmbientIntensity(float I);
     float getAmbientIntensity() const;
     Lights getAllLights() const;
-    void exportRTreeToPly(const char *file);
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

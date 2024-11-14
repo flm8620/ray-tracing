@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 
 #include "intersectable.h"
-#include "RTree.h"
+#include "rtree_util.h"
 
 
 class Mesh : public Intersectable {
@@ -33,7 +33,6 @@ class Mesh : public Intersectable {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> face_normals;
     std::vector<std::vector<faceID>> vertex_to_face;
 
-    typedef RTree<faceID, float, 3, float> MyTree;
     MyTree tree;
 
   public:
@@ -44,5 +43,4 @@ class Mesh : public Intersectable {
                               Eigen::Vector3f &rayD,
                               IntersectReport &report) const override;
     Face getFace(faceID id) const;
-    void exportRTreeToPly(const char *file) const;
 };

@@ -20,6 +20,8 @@ add_subdirectory(lib/rply)
 add_executable(${PROJECT_NAME} 
   main.cpp 
   RTree.h 
+  rtree_util.h
+  rtree_util.cpp
   ray_slab.h 
   geometry_util.h 
   camera.h 
