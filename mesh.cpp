@@ -83,7 +83,7 @@ Eigen::AlignedBox3f Mesh::getBoundingBox() const {
     return Eigen::AlignedBox3f(vmin, vmax);
 }
 
-bool Mesh::rayIntersect(Vector3f &rayO, Vector3f &rayD, IntersectReport &report) const {
+bool Mesh::rayIntersect(const Vector3f &rayO, const Vector3f &rayD, IntersectReport &report) const {
     struct RaySimple {
         float O[3], D[3];
     } ray;

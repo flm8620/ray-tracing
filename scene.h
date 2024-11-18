@@ -20,6 +20,7 @@ struct Material {
     bool specular = false;
     bool is_fog = false;
     float fog_sigma = 0.0;
+    float fog_color = 1.0;
     float relative_refractive_index = 1.33;
 };
 
@@ -60,7 +61,7 @@ class Scene {
     void addObject(std::shared_ptr<Intersectable> obj, const std::shared_ptr<Material> &material);
     void addSunshine(Sunshine s);
     std::vector<Sunshine> getSunshines() const { return lights.sunshines; }
-    bool ray_intersect_query(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, IntersectReport &report, Material **material) const;
+    bool ray_intersect_query(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, IntersectReport &report, Material **material) const;
     void setAmbientIntensity(float I);
     float getAmbientIntensity() const;
     Lights getAllLights() const;

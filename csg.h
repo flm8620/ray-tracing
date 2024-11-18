@@ -15,11 +15,11 @@ class CSG : public Intersectable {
 
   public:
     virtual ~CSG() {}
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const = 0;
-    virtual bool rayIntersect(Eigen::Vector3f &rayO,
-                              Eigen::Vector3f &rayD,
+    virtual bool rayIntersect(const Eigen::Vector3f &rayO,
+                              const Eigen::Vector3f &rayD,
                               IntersectReport &report) const final;
 };
 
@@ -29,8 +29,8 @@ class CSG_Union : public CSG {
   public:
     CSG_Union(std::vector<std::shared_ptr<CSG>> objects);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };
 
@@ -40,8 +40,8 @@ class CSG_Intersection : public CSG {
   public:
     CSG_Intersection(std::vector<std::shared_ptr<CSG>> objects);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };
 
@@ -52,8 +52,8 @@ class CSG_Difference : public CSG {
   public:
     CSG_Difference(std::shared_ptr<CSG> object1, std::shared_ptr<CSG> object2);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };
 
@@ -68,8 +68,8 @@ class CSG_Sphere : public CSG_Geometric {
   public:
     CSG_Sphere(Eigen::Vector3f center, float radius);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };
 
@@ -85,8 +85,8 @@ class CSG_Box : public CSG_Geometric {
     CSG_Box(Eigen::Vector3f size,
             Eigen::Transform<float, 3, Eigen::Affine> origin_transform = Eigen::Transform<float, 3, Eigen::Affine>::Identity());
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };
 
@@ -101,7 +101,7 @@ class CSG_Cylinder : public CSG_Geometric {
   public:
     CSG_Cylinder(Eigen::Vector3f center, Eigen::Vector3f direction, float radius, float height_min, float height_max);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersectIntervals(Eigen::Vector3f &rayO,
-                                       Eigen::Vector3f &rayD,
+    virtual bool rayIntersectIntervals(const Eigen::Vector3f &rayO,
+                                       const Eigen::Vector3f &rayD,
                                        DisjointIntervals &interior) const override;
 };

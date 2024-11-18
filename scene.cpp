@@ -48,7 +48,7 @@ void Scene::addSunshine(Sunshine s) {
     lights.sunshines.push_back(s);
 }
 
-bool Scene::ray_intersect_query(Vector3f &rayO, Vector3f &rayD, IntersectReport &report, Material **material) const {
+bool Scene::ray_intersect_query(const Vector3f &rayO, const Vector3f &rayD, IntersectReport &report, Material **material) const {
     struct RaySimple {
         float O[3], D[3];
     } ray;

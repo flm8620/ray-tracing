@@ -4,11 +4,11 @@
 
 // Moller–Trumbore ray-triangle intersection algorithm
 template <typename T>
-bool ray_triangle_intersect(Eigen::Matrix<T, 3, 1> v0,
-                            Eigen::Matrix<T, 3, 1> v1,
-                            Eigen::Matrix<T, 3, 1> v2,
-                            Eigen::Matrix<T, 3, 1> rayO,
-                            Eigen::Matrix<T, 3, 1> rayD,
+bool ray_triangle_intersect(const Eigen::Matrix<T, 3, 1> &v0,
+                            const Eigen::Matrix<T, 3, 1> &v1,
+                            const Eigen::Matrix<T, 3, 1> &v2,
+                            const Eigen::Matrix<T, 3, 1> &rayO,
+                            const Eigen::Matrix<T, 3, 1> &rayD,
                             T *distance_return,
                             Eigen::Matrix<T, 3, 1> *intersect_point,
                             T *uu, T *vv, T *ww) {

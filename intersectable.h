@@ -15,7 +15,7 @@ class Intersectable {
     Intersectable() = default;
     virtual ~Intersectable() {}
     virtual Eigen::AlignedBox3f getBoundingBox() const = 0;
-    virtual bool rayIntersect(Eigen::Vector3f &rayO,
-                              Eigen::Vector3f &rayD,
+    virtual bool rayIntersect(const Eigen::Vector3f &rayO,
+                              const Eigen::Vector3f &rayD,
                               IntersectReport &report) const = 0;
 };

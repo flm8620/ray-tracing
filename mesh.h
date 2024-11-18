@@ -39,8 +39,8 @@ class Mesh : public Intersectable {
     Mesh();
     void readPlyFile(const char *file);
     virtual Eigen::AlignedBox3f getBoundingBox() const override;
-    virtual bool rayIntersect(Eigen::Vector3f &rayO,
-                              Eigen::Vector3f &rayD,
+    virtual bool rayIntersect(const Eigen::Vector3f &rayO,
+                              const Eigen::Vector3f &rayD,
                               IntersectReport &report) const override;
     Face getFace(faceID id) const;
 };

@@ -13,7 +13,7 @@ Eigen::AlignedBox3f CSG_Sphere::getBoundingBox() const {
     return Eigen::AlignedBox3f(center - rrr, center + rrr);
 }
 
-bool CSG_Sphere::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Sphere::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     float t = rayD.dot(center - rayO);
     Eigen::Vector3f P = rayO + t * rayD;
     Eigen::Vector3f CP = P - center;
@@ -63,7 +63,7 @@ Eigen::AlignedBox3f CSG_Box::getBoundingBox() const {
     return box;
 }
 
-bool CSG_Box::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Box::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     Eigen::Vector3f rayO_t = origin_transform_inverse * rayO;
     Eigen::Vector3f rayD_t = origin_transform_inverse.linear() * rayD;
     float rayO_a[3], rayD_a[3], boxMin[3], boxMax[3];
@@ -128,7 +128,7 @@ Eigen::AlignedBox3f CSG_Cylinder::getBoundingBox() const {
     return box;
 }
 
-bool CSG_Cylinder::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Cylinder::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     Eigen::Vector3f dp = rayO - center;
     float A = (rayD - rayD.dot(direction) * direction).squaredNorm();
     float B = 2 * (rayD - rayD.dot(direction) * direction).dot(dp - dp.dot(direction) * direction);
@@ -199,7 +199,7 @@ void EigenToArray(const Eigen::Vector3f &v, float a[3]) {
     a[2] = v[2];
 }
 
-bool CSG_Union::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Union::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     bool r = false;
     for (auto obj : objects) {
         DisjointIntervals interior_;
@@ -225,8 +225,8 @@ CSG_Union::CSG_Union(std::vector<std::shared_ptr<CSG>> objects)
     : objects(objects) {
 }
 
-bool CSG::rayIntersect(Eigen::Vector3f &rayO,
-                       Eigen::Vector3f &rayD,
+bool CSG::rayIntersect(const Eigen::Vector3f &rayO,
+                       const Eigen::Vector3f &rayD,
                        IntersectReport &report) const {
     DisjointIntervals interior;
     bool r = rayIntersectIntervals(rayO, rayD, interior);
@@ -273,7 +273,7 @@ Eigen::AlignedBox3f CSG_Intersection::getBoundingBox() const {
     return box;
 }
 
-bool CSG_Intersection::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Intersection::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     bool r = false;
     interior = DisjointIntervals::all();
     for (auto obj : objects) {
@@ -298,7 +298,7 @@ Eigen::AlignedBox3f CSG_Difference::getBoundingBox() const {
     return object1->getBoundingBox();
 }
 
-bool CSG_Difference::rayIntersectIntervals(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
+bool CSG_Difference::rayIntersectIntervals(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, DisjointIntervals &interior) const {
     if (object1->rayIntersectIntervals(rayO, rayD, interior)) {
         DisjointIntervals interior2;
         if (object2->rayIntersectIntervals(rayO, rayD, interior2)) {
