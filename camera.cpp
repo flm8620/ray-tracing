@@ -9,29 +9,17 @@ Camera::Camera(int W, int H, float f) {
     center_y = height / 2.;
 }
 
-void Camera::setHeadUpward() {
-    Vec3 ea = parameter.rotation().eulerAngles(2, 0, 2);
-    Eigen::Matrix3f aa;
-    const float pi = 3.1415926535897;
-    if (ea[1] > 0) {
-        ea[0] += pi;
-        ea[1] = -ea[1];
-    }
-    aa = Eigen::AngleAxisf(ea[0], Vec3::UnitZ()) * Eigen::AngleAxisf(ea[1], Vec3::UnitX()) * Eigen::AngleAxisf(0.0, Vec3::UnitZ());
-    parameter = Eigen::Translation3f(parameter.translation()) * aa;
-}
-
 void Camera::setPosition(Eigen::Vector3f p) {
     parameter.translation() = p;
 }
 
 void Camera::lookThrough(Eigen::Vector3f direction) {
-    Eigen::Matrix3f R = parameter.rotation();
-    Vec3 z = R.block(0, 2, 3, 1);
-    Eigen::Quaternion<float> q;
-    q.setFromTwoVectors(z, direction);
-    parameter = Eigen::Translation3f(parameter.translation()) * q;
-    setHeadUpward();
+    Eigen::Matrix3f R;
+    Vec3 z = direction.normalized();
+    Vec3 x = Vec3(0, 0, -1).cross(z).normalized();
+    Vec3 y = z.cross(x);
+    R << x, y, z;
+    parameter.linear() = R;
 }
 
 void Camera::lookAt(Eigen::Vector3f target) {

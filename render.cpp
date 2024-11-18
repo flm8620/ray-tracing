@@ -127,7 +127,7 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     lights = scene.getAllLights();
     Vector3f o(cam.x(), cam.y(), cam.z());
     const int reflection = 10;
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 16)
     for (int i = 0; i < H; i++) {
         cout << i << endl;
         for (int j = 0; j < W; j++) {

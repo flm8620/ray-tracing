@@ -89,16 +89,23 @@ int main() {
 
 
     Camera cam(800, 600, 600);
-    cam.setPosition(Vector3f(0.08, -0.15, 0.15));
-    cam.lookAt(Vector3f(0.0, 0.0, 0.0));
     cam.height = 800;
     cam.width = 1000;
     cam.focal = 600;
 
     Render render;
-    cv::Mat image = render.renderImage(cam, scene);
+    for (int i = 0; i < 5; i++) {
+        const double angle = i * 0.2 + 0.2;
+        const double radius = 0.1;
+        const double x = std::cos(angle) * radius;
+        const double y = std::sin(angle) * radius;
+        const double z = 0.1;
+        cam.setPosition(Vector3f(x, y, z));
+        cam.lookAt(Vector3f(0.0, 0.0, 0.0));
+        cv::Mat image = render.renderImage(cam, scene);
+        cv::imwrite("saved-" + std::to_string(i) + ".png", image);
+    }
 
-    cv::imwrite("saved.png", image);
 
     return 0;
 }

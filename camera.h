@@ -12,7 +12,6 @@ struct Camera {
 
     Camera(int W, int H, float f);
 
-    void setHeadUpward();
     void setPosition(Eigen::Vector3f p);
     void lookThrough(Eigen::Vector3f direction);
     void lookAt(Eigen::Vector3f target);
