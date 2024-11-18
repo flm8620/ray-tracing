@@ -13,13 +13,13 @@ using namespace Eigen;
 Scene::Scene() {
 }
 
-void Scene::addMeshFromPlyFile(const char *file, Material &material) {
+void Scene::addMeshFromPlyFile(const char *file, const std::shared_ptr<Material> &material) {
     std::shared_ptr<Mesh> mesh(new Mesh());
     mesh->readPlyFile(file);
     addObject(mesh, material);
 }
 
-void Scene::addObject(std::shared_ptr<Intersectable> obj, Material &material) {
+void Scene::addObject(std::shared_ptr<Intersectable> obj, const std::shared_ptr<Material> &material) {
     float box_min[3], box_max[3];
     Eigen::AlignedBox3f box;
     box = obj->getBoundingBox();
@@ -48,7 +48,7 @@ void Scene::addSunshine(Sunshine s) {
     lights.sunshines.push_back(s);
 }
 
-bool Scene::ray_intersect_query(Vector3f &rayO, Vector3f &rayD, IntersectReport &report, Material &material) const {
+bool Scene::ray_intersect_query(Vector3f &rayO, Vector3f &rayD, IntersectReport &report, Material **material) const {
     struct RaySimple {
         float O[3], D[3];
     } ray;
@@ -90,7 +90,7 @@ bool Scene::ray_intersect_query(Vector3f &rayO, Vector3f &rayD, IntersectReport 
         distance = std::min(distance, report_tmp.t);
     }
     if (found) {
-        material = materials[objects_material[obj_id]];
+        *material = materials[objects_material[obj_id]].get();
         return true;
     } else {
         return false;

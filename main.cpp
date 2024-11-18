@@ -8,6 +8,7 @@
 #include "scene.h"
 #include "render.h"
 #include "csg.h"
+#include "random_texture.h"
 
 using namespace std;
 using namespace Eigen;
@@ -15,29 +16,18 @@ using namespace Eigen;
 int main() {
     Scene scene;
 
-    Material m3;
-    m3.diffuse_coeff = 1.0;
-    m3.specular_coeff = 1.0;
-    m3.alpha_phong = 10;
-    m3.specular = true;
-    m3.transparent = false;
-    m3.mirror = false;
-    m3.relative_refractive_index = 1.6;
-    // scene.addMeshFromPlyFile("/home/leman/Documents/lens2.ply", m3);
-    // scene.addMeshFromPlyFile("/home/leman/Documents/lens3.ply", m3);
-
-
-    Material m;
-    m.alpha_phong = 10.0;
-    m.diffuse_coeff = 0.8;
-    m.specular_coeff = 1.0;
-    m.mirror = false;
-    m.specular = false;
-    m.transparent = false;
-    // scene.addMeshFromPlyFile("/home/leman/Documents/bun_zipper2.ply", m);
+    auto m3 = std::make_shared<Material>();
+    m3->diffuse_coeff = 0.5;
+    m3->random_diffuse_texture = std::make_shared<RandomNoise>();
+    m3->random_diffuse_texture->setScale(5000.0);
+    m3->specular_coeff = 0.1;
+    m3->alpha_phong = 10;
+    m3->specular = true;
+    m3->transparent = false;
+    m3->mirror = false;
+    m3->relative_refractive_index = 1.6;
 
     auto sphere1 = std::make_shared<CSG_Sphere>(Vector3f(0.0, 0.0, 0.0), 0.065f);
-    auto sphere2 = std::make_shared<CSG_Sphere>(Vector3f(0.0, 0.0, 0.0), 0.02f);
 
     float radius = 0.033;
     float length = 0.1;
@@ -70,19 +60,19 @@ int main() {
     scene.addObject(hole, m3);
     // scene.addObject(cylinders, m3);
 
-    auto sphere3 = std::make_shared<CSG_Sphere>(Vector3f(0.05, 0.0, 0.0), 0.05f);
-    auto sphere4 = std::make_shared<CSG_Sphere>(Vector3f(-0.05, 0.0, 0.0), 0.05f);
+    // auto sphere3 = std::make_shared<CSG_Sphere>(Vector3f(0.05, 0.0, 0.0), 0.05f);
+    // auto sphere4 = std::make_shared<CSG_Sphere>(Vector3f(-0.05, 0.0, 0.0), 0.05f);
 
     // scene.addObject(sphere3, m3);
     // scene.addObject(sphere4, m3);
     // exportRTreeToPly(scene.getTree(), "rtree.ply");
     // return 0;
 
-    Material m2;
-    m2.diffuse_coeff = 0.3;
-    m2.specular_coeff = 0.8;
-    m2.specular = false;
-    m2.mirror = true;
+    // Material m2;
+    // m2.diffuse_coeff = 0.3;
+    // m2.specular_coeff = 0.8;
+    // m2.specular = false;
+    // m2.mirror = true;
     // scene.addMeshFromPlyFile("/home/leman/Documents/plan.ply", m2);
 
 
@@ -95,7 +85,7 @@ int main() {
     sun.intensity = 0.4;
     scene.addSunshine(sun);
 
-    scene.setAmbientIntensity(0.05);
+    scene.setAmbientIntensity(0.8);
 
 
     Camera cam(800, 600, 600);

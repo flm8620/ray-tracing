@@ -17,8 +17,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 add_subdirectory(lib/rply)
 
-add_executable(${PROJECT_NAME} 
-  main.cpp 
+add_library(ray_lib
   RTree.h 
   rtree_util.h
   rtree_util.cpp
@@ -37,9 +36,17 @@ add_executable(${PROJECT_NAME}
   mesh.cpp 
   csg.h 
   csg.cpp
+  random_texture.h
+  random_texture.cpp
 )
-target_compile_options(${PROJECT_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Eigen3::Eigen ply_reader OpenMP::OpenMP_CXX)
+
+target_compile_options(ray_lib PRIVATE ${OpenMP_CXX_FLAGS})
+target_link_libraries(ray_lib ${OpenCV_LIBS} Eigen3::Eigen ply_reader OpenMP::OpenMP_CXX)
+add_executable(ray_tracing main.cpp)
+target_link_libraries(ray_tracing ray_lib)
+
+add_executable(textureTest texture_test.cpp)
+target_link_libraries(textureTest ray_lib)
 
 
 enable_testing()
@@ -47,8 +54,8 @@ enable_testing()
 add_executable(runUnitTests test.cpp)
 add_executable(testInterval test_interval.cpp intervals.h intervals.cpp)
 
-target_link_libraries(runUnitTests PRIVATE GTest::GTest GTest::Main ${OpenCV_LIBS})
-target_link_libraries(testInterval PRIVATE GTest::GTest GTest::Main Eigen3::Eigen)
+target_link_libraries(runUnitTests PRIVATE ray_lib GTest::GTest GTest::Main ${OpenCV_LIBS})
+target_link_libraries(testInterval PRIVATE ray_lib GTest::GTest GTest::Main Eigen3::Eigen)
 
 add_test(NAME test COMMAND runUnitTests)
 add_test(NAME test_interval COMMAND testInterval)

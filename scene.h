@@ -8,14 +8,18 @@
 
 #include "intersectable.h"
 #include "rtree_util.h"
+#include "random_texture.h"
 
 struct Material {
     float diffuse_coeff = 0.5;
+    std::shared_ptr<RandomNoise> random_diffuse_texture;
     float specular_coeff = 0.5;
     float alpha_phong = 2.0;
     bool transparent = false;
     bool mirror = false;
     bool specular = false;
+    bool is_fog = false;
+    float fog_sigma = 0.0;
     float relative_refractive_index = 1.33;
 };
 
@@ -42,7 +46,7 @@ class Scene {
     typedef unsigned int materialID;
     std::vector<std::shared_ptr<Intersectable>> objects;
 
-    std::vector<Material> materials;
+    std::vector<std::shared_ptr<Material>> materials;
     std::vector<materialID> objects_material;
 
     MyTree tree;
@@ -51,12 +55,12 @@ class Scene {
 
   public:
     Scene();
-    const MyTree& getTree() const { return tree; }
-    void addMeshFromPlyFile(const char *file, Material &material);
-    void addObject(std::shared_ptr<Intersectable> obj, Material &material);
+    const MyTree &getTree() const { return tree; }
+    void addMeshFromPlyFile(const char *file, const std::shared_ptr<Material> &material);
+    void addObject(std::shared_ptr<Intersectable> obj, const std::shared_ptr<Material> &material);
     void addSunshine(Sunshine s);
     std::vector<Sunshine> getSunshines() const { return lights.sunshines; }
-    bool ray_intersect_query(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, IntersectReport &report, Material &material) const;
+    bool ray_intersect_query(Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, IntersectReport &report, Material **material) const;
     void setAmbientIntensity(float I);
     float getAmbientIntensity() const;
     Lights getAllLights() const;

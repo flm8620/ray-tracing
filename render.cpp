@@ -15,14 +15,21 @@ Render::Render() {
 float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, int reflexLeft) {
     const float eps = 1e-6;
     IntersectReport report;
-    Material mt;
-    bool intersect = scene.ray_intersect_query(rayO, rayD, report, mt);
+    Material *mt;
+    bool intersect = scene.ray_intersect_query(rayO, rayD, report, &mt);
 
     float intensity = 0.0;
     if (!intersect) {
         return intensity;
     }
-    intensity += lights.ambientIntensity * mt.diffuse_coeff;
+    if (mt->random_diffuse_texture) {
+        float texture_value = mt->random_diffuse_texture->smoothTurbulenceNoise(report.intersect_point.x(),
+                                                                                report.intersect_point.y(),
+                                                                                report.intersect_point.z());
+        intensity += lights.ambientIntensity * texture_value;
+    } else {
+        intensity += lights.ambientIntensity * mt->diffuse_coeff;
+    }
     Vector3f n_to_ray = report.normal;
     if (report.normal.dot(rayD) > 0)
         n_to_ray = -n_to_ray;
@@ -35,31 +42,31 @@ float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, i
         if (sun_rayD.dot(n_to_ray) < 0)
             continue;
         IntersectReport report_sun;
-        Material mt2;
-        bool intersect_sun = scene.ray_intersect_query(sun_rayO, sun_rayD, report_sun, mt2);
+        Material *mt2;
+        bool intersect_sun = scene.ray_intersect_query(sun_rayO, sun_rayD, report_sun, &mt2);
         if (!intersect_sun) {
-            intensity += phongShading(n_to_ray, -rayD, sun_rayD, s.intensity, mt);
+            intensity += phongShading(n_to_ray, -rayD, sun_rayD, s.intensity, *mt);
         }
     }
 
     float reflex_intensity = 0;
     // reflex
-    if (mt.mirror && reflexLeft > 0) {
+    if (mt->mirror && reflexLeft > 0) {
         Vector3f r = -2.0 * rayD.dot(n_to_ray) * n_to_ray + rayD;
         Vector3f reflexD = r;
         Vector3f reflexO = offset_intersect;
-        reflex_intensity = mt.specular_coeff * getIntensity(scene, reflexO, reflexD, reflexLeft - 1);
+        reflex_intensity = mt->specular_coeff * getIntensity(scene, reflexO, reflexD, reflexLeft - 1);
     }
 
     float T = 0.0, R = 1.0;
     // refraction
-    if (mt.transparent && reflexLeft > 0) {
+    if (mt->transparent && reflexLeft > 0) {
         float n1, n2;
         if (report.normal.dot(rayD) > 0) {
-            n1 = mt.relative_refractive_index;
+            n1 = mt->relative_refractive_index;
             n2 = 1.0;
         } else {
-            n2 = mt.relative_refractive_index;
+            n2 = mt->relative_refractive_index;
             n1 = 1.0;
         }
         Vector3f v = -rayD;
@@ -83,7 +90,7 @@ float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, i
             Vector3f t = -n_to_ray * cos_r + p * sin_r;
             Vector3f refractionD = t;
             Vector3f refractionO = report.intersect_point - eps * n_to_ray;
-            intensity += T * mt.specular_coeff * getIntensity(scene, refractionO, refractionD, reflexLeft - 1);
+            intensity += T * mt->specular_coeff * getIntensity(scene, refractionO, refractionD, reflexLeft - 1);
         } else {
             R = 1.0;
         }
@@ -119,6 +126,7 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     cv::Mat image(H, W, CV_8UC3);
     lights = scene.getAllLights();
     Vector3f o(cam.x(), cam.y(), cam.z());
+    const int reflection = 10;
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < H; i++) {
         cout << i << endl;
@@ -130,7 +138,7 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
             v.normalize();
             v = cam.rotationMatrix() * v;
 
-            float intensity = getIntensity(scene, o, v, 5);
+            float intensity = getIntensity(scene, o, v, 10);
             intensity = std::max<float>(std::min<float>(intensity, 1.0f), 0.0f);
             image.at<cv::Vec3b>(i, j) = cv::Vec3b(255 * intensity, 255 * intensity, 255 * intensity);
         }
