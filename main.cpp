@@ -15,6 +15,7 @@ using namespace Eigen;
 
 int main() {
     Scene scene;
+    scene.setBackground(0.5f);
 
     auto m3 = std::make_shared<Material>();
     m3->diffuse_coeff = 0.5;
@@ -68,12 +69,12 @@ int main() {
     // exportRTreeToPly(scene.getTree(), "rtree.ply");
     // return 0;
 
-    // Material m2;
-    // m2.diffuse_coeff = 0.3;
-    // m2.specular_coeff = 0.8;
-    // m2.specular = false;
-    // m2.mirror = true;
-    // scene.addMeshFromPlyFile("/home/leman/Documents/plan.ply", m2);
+    auto m_fog = std::make_shared<Material>();
+    m_fog->is_fog = true;
+    m_fog->fog_sigma = 10.0;
+    m_fog->fog_color = 1.0;
+    auto sphere_fog = std::make_shared<CSG_Sphere>(Vector3f(0.0, 0.0, 0.0), 0.06f);
+    scene.addObject(sphere_fog, m_fog);
 
 
     Sunshine sun;
@@ -94,9 +95,9 @@ int main() {
     cam.focal = 600;
 
     Render render;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 1; i++) {
         const double angle = i * 0.2 + 0.2;
-        const double radius = 0.1;
+        const double radius = 0.2;
         const double x = std::cos(angle) * radius;
         const double y = std::sin(angle) * radius;
         const double z = 0.1;

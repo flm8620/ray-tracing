@@ -161,3 +161,9 @@ Mesh::Face Mesh::getFace(faceID id) const {
     f.v2 = vertices[face_index[id][2]];
     return f;
 }
+
+bool Mesh::rayIntersectWithIntervals(const Eigen::Vector3f &rayO,
+                                     const Eigen::Vector3f &rayD,
+                                     DisjointIntervals &intervals) const {
+    throw; // not implemented
+}

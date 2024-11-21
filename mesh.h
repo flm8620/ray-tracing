@@ -42,5 +42,8 @@ class Mesh : public Intersectable {
     virtual bool rayIntersect(const Eigen::Vector3f &rayO,
                               const Eigen::Vector3f &rayD,
                               IntersectReport &report) const override;
+    virtual bool rayIntersectWithIntervals(const Eigen::Vector3f &rayO,
+                                           const Eigen::Vector3f &rayD,
+                                           DisjointIntervals &intervals) const override;
     Face getFace(faceID id) const;
 };

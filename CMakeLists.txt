@@ -10,6 +10,7 @@ find_package(OpenMP REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTest REQUIRED)
+find_package(glog REQUIRED)
 
 set(CMAKE_BUILD_TYPE Release)
 # set(CMAKE_BUILD_TYPE Debug)
@@ -41,7 +42,7 @@ add_library(ray_lib
 )
 
 target_compile_options(ray_lib PRIVATE ${OpenMP_CXX_FLAGS})
-target_link_libraries(ray_lib ${OpenCV_LIBS} Eigen3::Eigen ply_reader OpenMP::OpenMP_CXX)
+target_link_libraries(ray_lib ${OpenCV_LIBS} Eigen3::Eigen ply_reader glog::glog OpenMP::OpenMP_CXX)
 add_executable(ray_tracing main.cpp)
 target_link_libraries(ray_tracing ray_lib)
 

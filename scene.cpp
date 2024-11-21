@@ -48,7 +48,9 @@ void Scene::addSunshine(Sunshine s) {
     lights.sunshines.push_back(s);
 }
 
-bool Scene::ray_intersect_query(const Vector3f &rayO, const Vector3f &rayD, IntersectReport &report, Material **material) const {
+bool Scene::ray_intersect_query(const Vector3f &rayO, const Vector3f &rayD,
+                                IntersectReport &report, Material **material,
+                                IntervalIntersectReport *interval_report) const {
     struct RaySimple {
         float O[3], D[3];
     } ray;
@@ -80,17 +82,38 @@ bool Scene::ray_intersect_query(const Vector3f &rayO, const Vector3f &rayD, Inte
     IntersectReport report_tmp;
     objectID obj_id;
     for (objectID i : suspects) {
-        if (!objects[i]->rayIntersect(rayO, rayD, report_tmp))
-            continue;
-        if (report_tmp.t < distance) {
-            found = true;
-            obj_id = i;
-            report = report_tmp;
+        if (materials[objects_material[i]]->is_fog) {
+            if (interval_report) {
+                DisjointIntervals intervals;
+                if (objects[i]->rayIntersectWithIntervals(rayO, rayD, intervals)) {
+                    interval_report->objs_intervals.push_back(intervals);
+                    interval_report->materials.push_back(materials[objects_material[i]].get());
+                }
+            }
+        } else {
+            if (!objects[i]->rayIntersect(rayO, rayD, report_tmp))
+                continue;
+            if (report_tmp.t < distance) {
+                found = true;
+                obj_id = i;
+                report = report_tmp;
+            }
+            distance = std::min(distance, report_tmp.t);
         }
-        distance = std::min(distance, report_tmp.t);
     }
     if (found) {
         *material = materials[objects_material[obj_id]].get();
+
+        if (interval_report) {
+            DisjointIntervals::Interval ray_interval;
+            ray_interval.left = 0;
+            ray_interval.right = distance;
+
+            DisjointIntervals disjoint_ray_interval({ray_interval});
+            for (auto &interval : interval_report->objs_intervals) {
+                interval.intersectionWith(disjoint_ray_interval);
+            }
+        }
         return true;
     } else {
         return false;

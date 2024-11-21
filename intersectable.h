@@ -3,6 +3,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
+#include "intervals.h"
+
 struct IntersectReport {
     Eigen::Vector3f normal;
     Eigen::Vector3f intersect_point;
@@ -18,4 +20,7 @@ class Intersectable {
     virtual bool rayIntersect(const Eigen::Vector3f &rayO,
                               const Eigen::Vector3f &rayD,
                               IntersectReport &report) const = 0;
+    virtual bool rayIntersectWithIntervals(const Eigen::Vector3f &rayO,
+                                           const Eigen::Vector3f &rayD,
+                                           DisjointIntervals &intervals) const = 0;
 };

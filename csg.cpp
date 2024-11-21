@@ -254,6 +254,12 @@ bool CSG::rayIntersect(const Eigen::Vector3f &rayO,
     return true;
 }
 
+bool CSG::rayIntersectWithIntervals(const Eigen::Vector3f &rayO,
+                                    const Eigen::Vector3f &rayD,
+                                    DisjointIntervals &intervals) const {
+    return rayIntersectIntervals(rayO, rayD, intervals);
+}
+
 CSG_Intersection::CSG_Intersection(std::vector<std::shared_ptr<CSG>> objects)
     : objects(objects) {
 }

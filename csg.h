@@ -21,6 +21,10 @@ class CSG : public Intersectable {
     virtual bool rayIntersect(const Eigen::Vector3f &rayO,
                               const Eigen::Vector3f &rayD,
                               IntersectReport &report) const final;
+
+    bool rayIntersectWithIntervals(const Eigen::Vector3f &rayO,
+                                   const Eigen::Vector3f &rayD,
+                                   DisjointIntervals &interior) const final;
 };
 
 class CSG_Union : public CSG {

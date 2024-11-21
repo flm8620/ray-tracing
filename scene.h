@@ -19,6 +19,8 @@ struct Material {
     bool mirror = false;
     bool specular = false;
     bool is_fog = false;
+    // fog_sigma*ds is the probability of a photon being absorbed by the fog travalling
+    // a infinidesimal ds
     float fog_sigma = 0.0;
     float fog_color = 1.0;
     float relative_refractive_index = 1.33;
@@ -42,6 +44,11 @@ struct Lights {
     float ambientIntensity;
 };
 
+struct IntervalIntersectReport {
+    std::vector<DisjointIntervals> objs_intervals;
+    std::vector<Material *> materials;
+};
+
 class Scene {
     typedef unsigned int objectID;
     typedef unsigned int materialID;
@@ -54,6 +61,8 @@ class Scene {
 
     Lights lights;
 
+    float background_color = 0.0f;
+
   public:
     Scene();
     const MyTree &getTree() const { return tree; }
@@ -61,9 +70,13 @@ class Scene {
     void addObject(std::shared_ptr<Intersectable> obj, const std::shared_ptr<Material> &material);
     void addSunshine(Sunshine s);
     std::vector<Sunshine> getSunshines() const { return lights.sunshines; }
-    bool ray_intersect_query(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD, IntersectReport &report, Material **material) const;
+    bool ray_intersect_query(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD,
+                             IntersectReport &report, Material **material,
+                             IntervalIntersectReport *interval_report = nullptr) const;
     void setAmbientIntensity(float I);
     float getAmbientIntensity() const;
     Lights getAllLights() const;
+    void setBackground(float color) { background_color = color; }
+    float getBackground() const { return background_color; }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

@@ -7,7 +7,7 @@
 
 class Render {
     Lights lights;
-
+    float considerFogInfluence(const IntervalIntersectReport &interval_report, float intensity);
     float getIntensity(const Scene &scene, Eigen::Vector3f &rayO, Eigen::Vector3f &rayD, int reflexLeft);
     float phongShading(const Eigen::Vector3f &n,
                        const Eigen::Vector3f &view,
