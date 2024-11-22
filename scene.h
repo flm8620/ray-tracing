@@ -11,9 +11,9 @@
 #include "random_texture.h"
 
 struct Material {
-    float diffuse_coeff = 0.5;
-    std::shared_ptr<RandomNoise> random_diffuse_texture;
-    float specular_coeff = 0.5;
+    Eigen::Vector3f diffuse_color = Eigen::Vector3f(0.5, 0.5, 0.5);
+    std::shared_ptr<RandomTexture> random_diffuse_texture;
+    Eigen::Vector3f specular_coeff = Eigen::Vector3f(0.5, 0.5, 0.5);
     float alpha_phong = 2.0;
     bool transparent = false;
     bool mirror = false;
@@ -22,26 +22,26 @@ struct Material {
     // fog_sigma*ds is the probability of a photon being absorbed by the fog travalling
     // a infinidesimal ds
     float fog_sigma = 0.0;
-    float fog_color = 1.0;
+    Eigen::Vector3f fog_color = Eigen::Vector3f(1.0, 1.0, 1.0);
     float relative_refractive_index = 1.33;
 };
 
 struct Sunshine {
     Eigen::Vector3f direction;
-    float intensity;
+    Eigen::Vector3f color;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 struct PointLight {
     Eigen::Vector3f pos;
-    float intensity;
+    Eigen::Vector3f color;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 struct Lights {
     std::vector<Sunshine> sunshines;
     std::vector<PointLight> pointLights;
-    float ambientIntensity;
+    Eigen::Vector3f ambientColor;
 };
 
 struct IntervalIntersectReport {
@@ -61,7 +61,7 @@ class Scene {
 
     Lights lights;
 
-    float background_color = 0.0f;
+    Eigen::Vector3f background_color = Eigen::Vector3f(0.f, 0.f, 0.f);
 
   public:
     Scene();
@@ -73,10 +73,10 @@ class Scene {
     bool ray_intersect_query(const Eigen::Vector3f &rayO, const Eigen::Vector3f &rayD,
                              IntersectReport &report, Material **material,
                              IntervalIntersectReport *interval_report = nullptr) const;
-    void setAmbientIntensity(float I);
-    float getAmbientIntensity() const;
+    void setAmbientColor(const Eigen::Vector3f &color);
+    Eigen::Vector3f getAmbientColor() const;
     Lights getAllLights() const;
-    void setBackground(float color) { background_color = color; }
-    float getBackground() const { return background_color; }
+    void setBackground(const Eigen::Vector3f &color) { background_color = color; }
+    Eigen::Vector3f getBackground() const { return background_color; }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

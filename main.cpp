@@ -15,13 +15,13 @@ using namespace Eigen;
 
 int main() {
     Scene scene;
-    scene.setBackground(0.0f);
+    scene.setBackground(Eigen::Vector3f::Zero());
 
     auto m3 = std::make_shared<Material>();
-    m3->diffuse_coeff = 0.5;
-    m3->random_diffuse_texture = std::make_shared<RandomNoise>();
+    m3->diffuse_color = Eigen::Vector3f(0.5, 0.5, 0.5);
+    m3->random_diffuse_texture = std::make_shared<RandomTexture>();
     m3->random_diffuse_texture->setScale(5000.0);
-    m3->specular_coeff = 0.1;
+    m3->specular_coeff = Eigen::Vector3f(0.1, 0.1, 0.1);
     m3->alpha_phong = 10;
     m3->specular = true;
     m3->transparent = false;
@@ -71,10 +71,10 @@ int main() {
 
     {
         auto m_frame = std::make_shared<Material>();
-        m_frame->diffuse_coeff = 0.5;
-        m_frame->random_diffuse_texture = std::make_shared<RandomNoise>();
+        m_frame->diffuse_color = Eigen::Vector3f(0.5, 0.5, 0.5);
+        m_frame->random_diffuse_texture = std::make_shared<RandomTexture>();
         m_frame->random_diffuse_texture->setScale(2000.0);
-        m_frame->specular_coeff = 0.0;
+        m_frame->specular_coeff = Eigen::Vector3f(0.1, 0.1, 0.1);
         float frame_size = 0.07;
         float margin = 0.01;
         float large_margin = 0.02;
@@ -94,11 +94,10 @@ int main() {
         auto frame = std::make_shared<CSG_Difference>(outer_box, inner_hole);
         scene.addObject(frame, m_frame);
 
-
         auto m_fog = std::make_shared<Material>();
         m_fog->is_fog = true;
         m_fog->fog_sigma = 10.0;
-        m_fog->fog_color = 1.0;
+        m_fog->fog_color = Eigen::Vector3f(1.0, 1.0, 1.0);
         auto frame_fog = std::make_shared<CSG_Difference>(outer_box, inner_box);
         scene.addObject(frame_fog, m_fog);
     }
@@ -106,7 +105,7 @@ int main() {
         auto m_fog = std::make_shared<Material>();
         m_fog->is_fog = true;
         m_fog->fog_sigma = 10.0;
-        m_fog->fog_color = 1.0;
+        m_fog->fog_color = Eigen::Vector3f(1.0, 1.0, 1.0);
         auto box_fog = std::make_shared<CSG_Box>(Vector3f(0.2, -10, -10),
                                                  Vector3f(0.22, 10, 10),
                                                  trans);
@@ -115,27 +114,27 @@ int main() {
     }
 
 
-    Sunshine sun;
-    sun.direction = Vector3f(-0.3, 0.1, -1.0);
-    sun.intensity = 0.8;
-    scene.addSunshine(sun);
 
-    sun.direction = Vector3f(1.0, 1.0, 1.0);
-    sun.intensity = 0.4;
-    scene.addSunshine(sun);
+    Sunshine sun1;
+    sun1.direction = Vector3f(-0.3, 0.1, -1.0);
+    sun1.color = Eigen::Vector3f(0.8, 0.8, 0.8);
+    scene.addSunshine(sun1);
 
-    scene.setAmbientIntensity(0.8);
+    Sunshine sun2;
+    sun2.direction = Vector3f(1.0, 1.0, 1.0);
+    sun2.color = Eigen::Vector3f(0.4, 0.4, 0.4);
+    scene.addSunshine(sun2);
+
+    scene.setAmbientColor(Eigen::Vector3f(0.4, 0.4, 0.4));
 
 
     Camera cam(800, 600, 600);
-    cam.height = 800;
-    cam.width = 1000;
-    cam.focal = 1000;
 
     Render render;
+    const int N = 10;
     for (int i = 0; i < 1; i++) {
-        // const double angle = i * 0.2;
-        const double angle = 3.1415 *0.2;
+        const double angle = 3.1415926 * i / N * 0.5;
+        // const double angle = 3.1415 * 0.2;
         const double radius = 0.3;
         const double x = std::cos(angle) * radius;
         const double y = std::sin(angle) * radius;

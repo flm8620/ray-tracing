@@ -14,7 +14,8 @@ using namespace Eigen;
 Render::Render() {
 }
 
-float Render::considerFogInfluence(const IntervalIntersectReport &interval_report, float intensity) {
+Eigen::Vector3f Render::considerFogInfluence(const IntervalIntersectReport &interval_report,
+                                             const Eigen::Vector3f &color) {
     struct Event {
         float t;
         int type; // 1 for entering, -1 for exiting
@@ -39,7 +40,7 @@ float Render::considerFogInfluence(const IntervalIntersectReport &interval_repor
     std::sort(events.begin(), events.end());
 
     // Initialize intensity at infinity
-    float I = intensity;
+    Eigen::Vector3f I = color;
     float last_t = 1e10;
     std::set<Material *> active_materials;
     for (const auto &e : events) {
@@ -52,12 +53,12 @@ float Render::considerFogInfluence(const IntervalIntersectReport &interval_repor
             float delta_t = last_t - t;
             // Compute combined fog_sigma and fog_color
             float sigma = 0.0f;
-            float sigma_color = 0.0f;
+            Eigen::Vector3f sigma_color = Eigen::Vector3f::Zero();
             for (auto mat : active_materials) {
                 sigma += mat->fog_sigma;
                 sigma_color += mat->fog_sigma * mat->fog_color;
             }
-            float fog_color = 1.0f; // Default value
+            Eigen::Vector3f fog_color = Eigen::Vector3f::Ones(); // Default value
             if (sigma > 0.0f) {
                 fog_color = sigma_color / sigma;
             }
@@ -78,12 +79,12 @@ float Render::considerFogInfluence(const IntervalIntersectReport &interval_repor
     if (last_t > 0.0f) {
         float delta_t = last_t - 0.0f;
         float sigma = 0.0f;
-        float sigma_color = 0.0f;
+        Eigen::Vector3f sigma_color = Eigen::Vector3f::Zero();
         for (auto mat : active_materials) {
             sigma += mat->fog_sigma;
             sigma_color += mat->fog_sigma * mat->fog_color;
         }
-        float fog_color = 1.0f; // Default value
+        Eigen::Vector3f fog_color = Eigen::Vector3f::Ones(); // Default value
         if (sigma > 0.0f) {
             fog_color = sigma_color / sigma;
         }
@@ -93,23 +94,23 @@ float Render::considerFogInfluence(const IntervalIntersectReport &interval_repor
     return I;
 }
 
-float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, int reflexLeft) {
+Eigen::Vector3f Render::getColor(const Scene &scene, Vector3f &rayO, Vector3f &rayD, int reflexLeft) {
     const float eps = 1e-6;
     IntersectReport report;
     Material *mt;
     IntervalIntersectReport interval_report;
     bool intersect = scene.ray_intersect_query(rayO, rayD, report, &mt, &interval_report);
 
-    float intensity = 0.0;
+    Eigen::Vector3f color = Eigen::Vector3f::Zero();
 
     if (intersect) {
         if (mt->random_diffuse_texture) {
-            float texture_value = mt->random_diffuse_texture->smoothTurbulenceNoise(report.intersect_point.x(),
-                                                                                    report.intersect_point.y(),
-                                                                                    report.intersect_point.z());
-            intensity += lights.ambientIntensity * texture_value;
+            Eigen::Vector3f texture_value = mt->random_diffuse_texture->getColor(report.intersect_point.x(),
+                                                                                 report.intersect_point.y(),
+                                                                                 report.intersect_point.z());
+            color += lights.ambientColor.cwiseProduct(texture_value);
         } else {
-            intensity += lights.ambientIntensity * mt->diffuse_coeff;
+            color += lights.ambientColor.cwiseProduct(mt->diffuse_color);
         }
         Vector3f n_to_ray = report.normal;
         if (report.normal.dot(rayD) > 0)
@@ -127,17 +128,17 @@ float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, i
             IntervalIntersectReport interval_report2;
             bool intersect_sun = scene.ray_intersect_query(sun_rayO, sun_rayD, report_sun, &mt2);
             if (!intersect_sun) {
-                intensity += phongShading(n_to_ray, -rayD, sun_rayD, s.intensity, *mt);
+                color += phongShading(n_to_ray, -rayD, sun_rayD, s.color, *mt);
             }
         }
 
-        float reflex_intensity = 0;
+        Eigen::Vector3f reflex_intensity = Eigen::Vector3f::Zero();
         // reflex
         if (mt->mirror && reflexLeft > 0) {
             Vector3f r = -2.0 * rayD.dot(n_to_ray) * n_to_ray + rayD;
             Vector3f reflexD = r;
             Vector3f reflexO = offset_intersect;
-            reflex_intensity = mt->specular_coeff * getIntensity(scene, reflexO, reflexD, reflexLeft - 1);
+            reflex_intensity = mt->specular_coeff.cwiseProduct(getColor(scene, reflexO, reflexD, reflexLeft - 1));
         }
 
         float T = 0.0, R = 1.0;
@@ -172,26 +173,26 @@ float Render::getIntensity(const Scene &scene, Vector3f &rayO, Vector3f &rayD, i
                 Vector3f t = -n_to_ray * cos_r + p * sin_r;
                 Vector3f refractionD = t;
                 Vector3f refractionO = report.intersect_point - eps * n_to_ray;
-                intensity += T * mt->specular_coeff * getIntensity(scene, refractionO, refractionD, reflexLeft - 1);
+                color += T * mt->specular_coeff.cwiseProduct(getColor(scene, refractionO, refractionD, reflexLeft - 1));
             } else {
                 R = 1.0;
             }
         }
-        intensity += R * reflex_intensity;
+        color += R * reflex_intensity;
     } else {
-        intensity = scene.getBackground();
+        color = scene.getBackground();
     }
 
     if (!interval_report.objs_intervals.empty()) {
-        intensity = considerFogInfluence(interval_report, intensity);
+        color = considerFogInfluence(interval_report, color);
     }
 
-    return intensity;
+    return color;
 }
 
-float Render::phongShading(const Vector3f &n, const Vector3f &view, const Vector3f &light, float lightIntensity, const Material &mat) {
-    float intensity = 0.0;
-    intensity += std::max<float>(0.0, light.dot(n)) * lightIntensity * mat.diffuse_coeff;
+Eigen::Vector3f Render::phongShading(const Vector3f &n, const Vector3f &view, const Vector3f &light, const Vector3f &color, const Material &mat) {
+    Eigen::Vector3f intensity = Eigen::Vector3f::Zero();
+    intensity += std::max<float>(0.0, light.dot(n)) * color.cwiseProduct(mat.diffuse_color);
     if (mat.specular) {
         Vector3f r;
         r = 2.0 * light.dot(n) * n - light;
@@ -201,7 +202,7 @@ float Render::phongShading(const Vector3f &n, const Vector3f &view, const Vector
         //    float tmp = 1 - beta * lambda;
         //    float tmp2 = tmp * tmp;
         //    intensity += tmp2*tmp2*mat.specular_coeff*lightIntensity;
-        intensity += pow(r.dot(view), mat.alpha_phong) * mat.specular_coeff * lightIntensity;
+        intensity += pow(r.dot(view), mat.alpha_phong) * mat.specular_coeff.cwiseProduct(color);
     }
     return intensity;
 }
@@ -216,7 +217,7 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     lights = scene.getAllLights();
     Vector3f o(cam.x(), cam.y(), cam.z());
     const int reflection = 10;
-    #pragma omp parallel for schedule(dynamic, 16)
+#pragma omp parallel for schedule(dynamic, 16)
     for (int i = 0; i < H; i++) {
         cout << i << endl;
         for (int j = 0; j < W; j++) {
@@ -227,9 +228,15 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
             v.normalize();
             v = cam.rotationMatrix() * v;
 
-            float intensity = getIntensity(scene, o, v, 10);
-            intensity = std::max<float>(std::min<float>(intensity, 1.0f), 0.0f);
-            image.at<cv::Vec3b>(i, j) = cv::Vec3b(255 * intensity, 255 * intensity, 255 * intensity);
+            Eigen::Vector3f color = getColor(scene, o, v, 10);
+            color.x() = std::clamp(color.x(), 0.0f, 1.0f);
+            color.y() = std::clamp(color.y(), 0.0f, 1.0f);
+            color.z() = std::clamp(color.z(), 0.0f, 1.0f);
+            // BGR order
+            image.at<cv::Vec3b>(i, j) = cv::Vec3b(
+                255 * color.z(),
+                255 * color.y(),
+                255 * color.x());
         }
     }
     return image;

@@ -120,12 +120,12 @@ bool Scene::ray_intersect_query(const Vector3f &rayO, const Vector3f &rayD,
     }
 }
 
-void Scene::setAmbientIntensity(float I) {
-    lights.ambientIntensity = I;
+void Scene::setAmbientColor(const Eigen::Vector3f &color) {
+    lights.ambientColor = color;
 }
 
-float Scene::getAmbientIntensity() const {
-    return lights.ambientIntensity;
+Eigen::Vector3f Scene::getAmbientColor() const {
+    return lights.ambientColor;
 }
 
 Lights Scene::getAllLights() const {
