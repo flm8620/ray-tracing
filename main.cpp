@@ -15,7 +15,7 @@ using namespace Eigen;
 
 int main() {
     Scene scene;
-    scene.setBackground(0.5f);
+    scene.setBackground(0.0f);
 
     auto m3 = std::make_shared<Material>();
     m3->diffuse_coeff = 0.5;
@@ -69,12 +69,50 @@ int main() {
     // exportRTreeToPly(scene.getTree(), "rtree.ply");
     // return 0;
 
-    auto m_fog = std::make_shared<Material>();
-    m_fog->is_fog = true;
-    m_fog->fog_sigma = 10.0;
-    m_fog->fog_color = 1.0;
-    auto sphere_fog = std::make_shared<CSG_Sphere>(Vector3f(0.0, 0.0, 0.0), 0.06f);
-    scene.addObject(sphere_fog, m_fog);
+    {
+        auto m_frame = std::make_shared<Material>();
+        m_frame->diffuse_coeff = 0.5;
+        m_frame->random_diffuse_texture = std::make_shared<RandomNoise>();
+        m_frame->random_diffuse_texture->setScale(2000.0);
+        m_frame->specular_coeff = 0.0;
+        float frame_size = 0.07;
+        float margin = 0.01;
+        float large_margin = 0.02;
+
+        auto inner_box = std::make_shared<CSG_Box>(Vector3f(-frame_size, -frame_size, -frame_size),
+                                                   Vector3f(frame_size, frame_size, frame_size));
+        float outer_size = frame_size + margin;
+        auto outer_box = std::make_shared<CSG_Box>(Vector3f(-outer_size, -outer_size, -outer_size),
+                                                   Vector3f(outer_size, outer_size, outer_size));
+        auto inner_box_x = std::make_shared<CSG_Box>(Vector3f(-frame_size - large_margin, -frame_size, -frame_size),
+                                                     Vector3f(frame_size + large_margin, frame_size, frame_size));
+        auto inner_box_y = std::make_shared<CSG_Box>(Vector3f(-frame_size, -frame_size - large_margin, -frame_size),
+                                                     Vector3f(frame_size, frame_size + large_margin, frame_size));
+        auto inner_box_z = std::make_shared<CSG_Box>(Vector3f(-frame_size, -frame_size, -frame_size - large_margin),
+                                                     Vector3f(frame_size, frame_size, frame_size + large_margin));
+        auto inner_hole = std::make_shared<CSG_Union>(std::vector<std::shared_ptr<CSG>>{inner_box_x, inner_box_y, inner_box_z});
+        auto frame = std::make_shared<CSG_Difference>(outer_box, inner_hole);
+        scene.addObject(frame, m_frame);
+
+
+        auto m_fog = std::make_shared<Material>();
+        m_fog->is_fog = true;
+        m_fog->fog_sigma = 10.0;
+        m_fog->fog_color = 1.0;
+        auto frame_fog = std::make_shared<CSG_Difference>(outer_box, inner_box);
+        scene.addObject(frame_fog, m_fog);
+    }
+    if (false) {
+        auto m_fog = std::make_shared<Material>();
+        m_fog->is_fog = true;
+        m_fog->fog_sigma = 10.0;
+        m_fog->fog_color = 1.0;
+        auto box_fog = std::make_shared<CSG_Box>(Vector3f(0.2, -10, -10),
+                                                 Vector3f(0.22, 10, 10),
+                                                 trans);
+        auto sphere_fog = std::make_shared<CSG_Sphere>(Vector3f(0.0, 0.0, 0.0), 0.06f);
+        scene.addObject(box_fog, m_fog);
+    }
 
 
     Sunshine sun;
@@ -92,15 +130,16 @@ int main() {
     Camera cam(800, 600, 600);
     cam.height = 800;
     cam.width = 1000;
-    cam.focal = 600;
+    cam.focal = 1000;
 
     Render render;
     for (int i = 0; i < 1; i++) {
-        const double angle = i * 0.2 + 0.2;
-        const double radius = 0.2;
+        // const double angle = i * 0.2;
+        const double angle = 3.1415 *0.2;
+        const double radius = 0.3;
         const double x = std::cos(angle) * radius;
         const double y = std::sin(angle) * radius;
-        const double z = 0.1;
+        const double z = 0.0;
         cam.setPosition(Vector3f(x, y, z));
         cam.lookAt(Vector3f(0.0, 0.0, 0.0));
         cv::Mat image = render.renderImage(cam, scene);
