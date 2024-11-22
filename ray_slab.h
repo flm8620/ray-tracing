@@ -57,11 +57,11 @@ bool slab_test_3d_info(T rayO[3], T rayN[3], T boxMin[3], T boxMax[3], T &t_in, 
 
         float min_far = Tfar[0];
         axis_out = 0;
-        if (Tfar[1] > min_far) {
+        if (Tfar[1] < min_far) {
             min_far = Tfar[1];
             axis_out = 1;
         }
-        if (Tfar[2] > min_far) {
+        if (Tfar[2] < min_far) {
             min_far = Tfar[2];
             axis_out = 2;
         }
