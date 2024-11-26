@@ -1,4 +1,5 @@
 #include <cmath>
+#include <random>
 #include <vector>
 #include <ctime>
 
@@ -9,6 +10,7 @@
 #include "render.h"
 #include "csg.h"
 #include "random_texture.h"
+#include "colmap_convert.h"
 
 using namespace std;
 using namespace Eigen;
@@ -114,27 +116,30 @@ int main() {
     }
 
 
-
-    Sunshine sun1;
-    sun1.direction = Vector3f(-0.3, 0.1, -1.0);
-    sun1.color = Eigen::Vector3f(0.8, 0.8, 0.8);
-    scene.addSunshine(sun1);
+    // Sunshine sun1;
+    // sun1.direction = Vector3f(-0.3, 0.1, -1.0);
+    // sun1.color = Eigen::Vector3f(0.8, 0.8, 0.8);
+    // scene.addSunshine(sun1);
 
     Sunshine sun2;
-    sun2.direction = Vector3f(1.0, 1.0, 1.0);
+    sun2.direction = Vector3f(-1.0, -1.0, -1.0);
     sun2.color = Eigen::Vector3f(0.4, 0.4, 0.4);
     scene.addSunshine(sun2);
 
     scene.setAmbientColor(Eigen::Vector3f(0.4, 0.4, 0.4));
 
-
-    Camera cam(800, 600, 600);
+    int width = 800;
+    int height = 600;
+    float focal = 600.;
+    Camera cam(width, focal, focal);
 
     Render render;
-    const int N = 10;
-    for (int i = 0; i < 1; i++) {
+
+    std::vector<ImageInfo> images_info;
+
+    const int N = 30;
+    for (int i = 0; i < N; i++) {
         const double angle = 3.1415926 * i / N * 0.5;
-        // const double angle = 3.1415 * 0.2;
         const double radius = 0.3;
         const double x = std::cos(angle) * radius;
         const double y = std::sin(angle) * radius;
@@ -143,7 +148,28 @@ int main() {
         cam.lookAt(Vector3f(0.0, 0.0, 0.0));
         cv::Mat image = render.renderImage(cam, scene);
         cv::imwrite("saved-" + std::to_string(i) + ".png", image);
+
+        auto &info = images_info.emplace_back();
+        info.filename = "saved-" + std::to_string(i) + ".png";
+        info.translation = cam.getTranslationW2C();
+        Eigen::Matrix3f R = cam.getRotationW2C();
+        info.quat = Eigen::Quaternionf(R);
     }
+
+    std::vector<Eigen::Vector3f> points3d;
+
+    {
+        // generate random points in a box
+        const int N = 1000;
+        const float halfsize = 0.12;
+        std::uniform_real_distribution<float> dist(-halfsize, halfsize);
+        std::default_random_engine gen(123);
+        for (int i = 0; i < N; i++) {
+            points3d.emplace_back(dist(gen), dist(gen), dist(gen));
+        }
+    }
+
+    ConvertToColmapOutput(images_info, cam, width, height, focal, points3d, "colmap");
 
 
     return 0;

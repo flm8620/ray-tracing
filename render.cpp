@@ -94,7 +94,7 @@ Eigen::Vector3f Render::considerFogInfluence(const IntervalIntersectReport &inte
     return I;
 }
 
-Eigen::Vector3f Render::getColor(const Scene &scene, Vector3f &rayO, Vector3f &rayD, int reflexLeft) {
+Eigen::Vector3f Render::getColor(const Scene &scene, const Vector3f &rayO, const Vector3f &rayD, int reflexLeft) {
     const float eps = 1e-6;
     IntersectReport report;
     Material *mt;
@@ -215,7 +215,7 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     const float center_y = H / 2.0;
     cv::Mat image(H, W, CV_8UC3);
     lights = scene.getAllLights();
-    Vector3f o(cam.x(), cam.y(), cam.z());
+    const Vector3f o = cam.getCameraCenter();
     const int reflection = 10;
 #pragma omp parallel for schedule(dynamic, 16)
     for (int i = 0; i < H; i++) {

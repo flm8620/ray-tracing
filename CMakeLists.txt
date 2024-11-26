@@ -39,12 +39,16 @@ add_library(ray_lib
   csg.cpp
   random_texture.h
   random_texture.cpp
+  colmap_convert.h
 )
 
 target_compile_options(ray_lib PRIVATE ${OpenMP_CXX_FLAGS})
 target_link_libraries(ray_lib ${OpenCV_LIBS} Eigen3::Eigen ply_reader glog::glog OpenMP::OpenMP_CXX)
 add_executable(ray_tracing main.cpp)
 target_link_libraries(ray_tracing ray_lib)
+
+add_executable(sphere_fog main_sphere_fog.cpp)
+target_link_libraries(sphere_fog ray_lib)
 
 add_executable(textureTest texture_test.cpp)
 target_link_libraries(textureTest ray_lib)
