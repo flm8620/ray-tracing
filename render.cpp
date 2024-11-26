@@ -219,7 +219,6 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     const int reflection = 10;
 #pragma omp parallel for schedule(dynamic, 16)
     for (int i = 0; i < H; i++) {
-        cout << i << endl;
         for (int j = 0; j < W; j++) {
             Vector3f v;
             v[0] = j - center_x;
