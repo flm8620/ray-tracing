@@ -5,15 +5,26 @@
 
 class RandomNoise {
   private:
-    int seed;
+    const int seed;
+    const int octaves = 5;
+    const int N = 128;
+    std::vector<std::vector<float>> noise_cubes;
 
   public:
-    RandomNoise(int seed_ = 42) {
-        seed = seed_;
-    }
-
-    void setSeed(int seed_) {
-        seed = seed_;
+    RandomNoise(const int seed_ = 42) : seed(seed_) {
+        std::uniform_real_distribution<double> dis(0.0, 1.0);
+        std::mt19937 gen(seed);
+        noise_cubes.resize(octaves);
+        for (int i = 0; i < octaves; i++) {
+            noise_cubes[i].resize(N * N * N);
+            for (int x = 0; x < N; x++) {
+                for (int y = 0; y < N; y++) {
+                    for (int z = 0; z < N; z++) {
+                        noise_cubes[i][x + y * N + z * N * N] = dis(gen);
+                    }
+                }
+            }
+        }
     }
 
     double smoothTurbulenceNoise(double x, double y, double z, int octaves = 5) {
@@ -22,9 +33,10 @@ class RandomNoise {
         double frequency = 1.0 / (1 << (octaves - 1));
         double denom = 0.0;
         int parent_seed = seed;
-        for (int i = 0; i < octaves; i++) {
-            int level_seed = parent_seed * 991 % 857;
-            value += amplitude * smoothNoise(x * frequency, y * frequency, z * frequency, level_seed);
+        for (int octave = 0; octave < octaves; octave++) {
+            value += amplitude * smoothNoise(
+                                     x * frequency, y * frequency, z * frequency,
+                                     octave);
             denom += amplitude;
             amplitude *= 0.5;
             frequency *= 2.0;
@@ -33,15 +45,11 @@ class RandomNoise {
     }
 
   private:
-    double generateNoise(int x, int y, int z, int seed) {
-        const int N = 128;
-        std::uniform_real_distribution<double> dis(0.0, 1.0);
-        std::mt19937 gen;
-        gen.seed(seed * (x + y * N + z * N * N));
-        return dis(gen);
+    double generateNoise(int x, int y, int z, int octave) {
+        return noise_cubes[octave][x + y * N + z * N * N];
     }
 
-    double smoothNoise(double x, double y, double z, int seed) {
+    double smoothNoise(double x, double y, double z, int octave) {
         const int N = 128;
         int xn = std::floor(x);
         int yn = std::floor(y);
@@ -64,15 +72,15 @@ class RandomNoise {
         int z2 = (z1 + 1) % N;
 
         double value = 0.0;
-        value += (1 - fractX) * (1 - fractY) * (1 - fractZ) * generateNoise(x1, y1, z1, seed);
-        value += (1 - fractX) * (1 - fractY) * fractZ * generateNoise(x1, y1, z2, seed);
-        value += (1 - fractX) * fractY * (1 - fractZ) * generateNoise(x1, y2, z1, seed);
-        value += (1 - fractX) * fractY * fractZ * generateNoise(x1, y2, z2, seed);
+        value += (1 - fractX) * (1 - fractY) * (1 - fractZ) * generateNoise(x1, y1, z1, octave);
+        value += (1 - fractX) * (1 - fractY) * fractZ * generateNoise(x1, y1, z2, octave);
+        value += (1 - fractX) * fractY * (1 - fractZ) * generateNoise(x1, y2, z1, octave);
+        value += (1 - fractX) * fractY * fractZ * generateNoise(x1, y2, z2, octave);
 
-        value += fractX * (1 - fractY) * (1 - fractZ) * generateNoise(x2, y1, z1, seed);
-        value += fractX * (1 - fractY) * fractZ * generateNoise(x2, y1, z2, seed);
-        value += fractX * fractY * (1 - fractZ) * generateNoise(x2, y2, z1, seed);
-        value += fractX * fractY * fractZ * generateNoise(x2, y2, z2, seed);
+        value += fractX * (1 - fractY) * (1 - fractZ) * generateNoise(x2, y1, z1, octave);
+        value += fractX * (1 - fractY) * fractZ * generateNoise(x2, y1, z2, octave);
+        value += fractX * fractY * (1 - fractZ) * generateNoise(x2, y2, z1, octave);
+        value += fractX * fractY * fractZ * generateNoise(x2, y2, z2, octave);
         return value;
     }
 };
@@ -83,12 +91,7 @@ class RandomTexture {
     double scale = 1.0;
 
   public:
-    RandomTexture(int seed = 42) {
-        noise.setSeed(seed);
-    }
-
-    void setSeed(int seed) {
-        noise.setSeed(seed);
+    RandomTexture(int seed = 42) : noise(seed) {
     }
 
     void setScale(double scale_) {
