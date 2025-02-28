@@ -21,7 +21,6 @@ struct Camera {
     Eigen::Vector3f getTranslationW2C() const { return -parameter.linear().inverse() * parameter.translation(); }
     float cx() const { return center_x; }
     float cy() const { return center_y; }
-    Eigen::Vector2f getProjection(Vec3 X) const;
     Eigen::Matrix3f rotationMatrix() const;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

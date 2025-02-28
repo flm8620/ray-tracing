@@ -26,9 +26,4 @@ void Camera::lookAt(Eigen::Vector3f target) {
     lookThrough(target - parameter.translation());
 }
 
-Eigen::Vector2f Camera::getProjection(Eigen::Vector3f X) const {
-    Eigen::Vector3f EX = parameter.inverse(Eigen::Affine).linear() * X;
-    return Eigen::Vector2f(EX[0] / EX[2] * width / focal + center_x, EX[1] / EX[2] * height / focal + center_y);
-}
-
 Eigen::Matrix3f Camera::rotationMatrix() const { return parameter.rotation(); }

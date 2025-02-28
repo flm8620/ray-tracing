@@ -211,8 +211,8 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     const int H = cam.height, W = cam.width;
     const float focal = cam.focal;
 
-    const float center_x = W / 2.0;
-    const float center_y = H / 2.0;
+    const float center_x = cam.center_x;
+    const float center_y = cam.center_y;
     cv::Mat image(H, W, CV_8UC3);
     lights = scene.getAllLights();
     const Vector3f o = cam.getCameraCenter();
@@ -221,8 +221,8 @@ cv::Mat Render::renderImage(const Camera &cam, const Scene &scene) {
     for (int i = 0; i < H; i++) {
         for (int j = 0; j < W; j++) {
             Vector3f v;
-            v[0] = j - center_x;
-            v[1] = i - center_y;
+            v[0] = j - center_x + 0.5; // we use convention that the center of the top-left pixel is at (0.5, 0.5)
+            v[1] = i - center_y + 0.5;
             v[2] = focal;
             v.normalize();
             v = cam.rotationMatrix() * v;
