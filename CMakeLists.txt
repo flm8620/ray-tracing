@@ -44,7 +44,7 @@ add_library(ray_lib
 
 target_compile_options(ray_lib PRIVATE ${OpenMP_CXX_FLAGS})
 target_link_libraries(ray_lib ${OpenCV_LIBS} Eigen3::Eigen ply_reader glog::glog OpenMP::OpenMP_CXX)
-add_executable(ray main.cpp example_sphere_fog.cpp example_sphere_rgb.cpp example_fish_tank.cpp)
+add_executable(ray main.cpp example_sphere_fog.cpp example_sphere_rgb.cpp example_cube_rgb.cpp example_fish_tank.cpp)
 target_link_libraries(ray ray_lib)
 
 add_executable(textureTest texture_test.cpp)

@@ -3,6 +3,7 @@
 void example_sphere_fog();
 void example_fish_tank();
 void example_sphere_rgb();
+void example_cube_rgb();
 int main(int argc, char **argv) {
     // usage: ./ray <example_name>
     if (argc < 2) {
@@ -15,6 +16,8 @@ int main(int argc, char **argv) {
         example_sphere_fog();
     } else if (example_name == "sphere_rgb") {
         example_sphere_rgb();
+    } else if (example_name == "cube_rgb") {
+        example_cube_rgb();
     } else if (example_name == "fish_tank") {
         example_fish_tank();
     } else {
