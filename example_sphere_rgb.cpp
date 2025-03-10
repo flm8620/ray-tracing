@@ -42,11 +42,11 @@ void example_sphere_rgb() {
         auto m = std::make_shared<Material>();
         m->diffuse_color = Eigen::Vector3f(0.5, 0.5, 0.5);
         m->random_diffuse_texture = std::make_shared<RandomTexture>();
-        m->random_diffuse_texture->setScale(5000.0);
+        m->random_diffuse_texture->setScale(200.0);
         m->specular_coeff = Eigen::Vector3f(0.1, 0.1, 0.1);
         m->alpha_phong = 10;
         m->specular = true;
-        auto sphere = std::make_shared<CSG_Sphere>(Eigen::Vector3f(0.0, 0.0, 0.0), 0.1f);
+        auto sphere = std::make_shared<CSG_Sphere>(Eigen::Vector3f(0.0, 0.0, 0.0), 0.13f);
         scene.addObject(sphere, m);
     }
 
