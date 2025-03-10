@@ -31,10 +31,10 @@ void example_sphere_rgb() {
 
     scene.setAmbientColor(Eigen::Vector3f(0.4, 0.4, 0.4));
 
-    int width = 800;
-    int height = 600;
-    float focal = 600.;
-    Camera cam(width, focal, focal);
+    int width = 512;
+    int height = 512;
+    float focal = 512.;
+    Camera cam(width, height, focal);
 
     Render render;
 
@@ -55,7 +55,7 @@ void example_sphere_rgb() {
     std::filesystem::create_directories(image_out_dir);
 
     // generate points on the surface of unit sphere
-    std::vector<int> ring_length = {5, 10, 16, 10, 5};
+    std::vector<int> ring_length = {10, 20, 32, 20, 10};
     std::vector<float> pitch_angle = {-1. / 3. * M_PI, -1. / 6. * M_PI, 0.0, 1. / 6. * M_PI, 1. / 3. * M_PI};
     for (int i = 0; i < ring_length.size(); i++) {
         for (int j = 0; j < ring_length.at(i); j++) {

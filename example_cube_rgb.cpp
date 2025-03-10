@@ -34,7 +34,7 @@ void example_cube_rgb() {
     int width = 512;
     int height = 512;
     float focal = 512.;
-    Camera cam(width, focal, focal);
+    Camera cam(width, height, focal);
 
     Render render;
 

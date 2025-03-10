@@ -22,7 +22,7 @@ void example_sphere_fog() {
     int width = 800;
     int height = 600;
     float focal = 600.;
-    Camera cam(width, focal, focal);
+    Camera cam(width, height, focal);
 
     Render render;
 
