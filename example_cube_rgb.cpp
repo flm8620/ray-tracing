@@ -35,6 +35,7 @@ void example_cube_rgb() {
     int height = 512;
     float focal = 512.;
     Camera cam(width, height, focal);
+    const double cam_radius = 2.0;
 
     Render render;
 
@@ -147,10 +148,9 @@ void example_cube_rgb() {
         for (int j = 0; j < ring_length.at(i); j++) {
             const float pitch = pitch_angle.at(i);
             const float theta = 2. * M_PI * j / ring_length.at(i);
-            const double radius = 2.0;
-            const double x = std::cos(theta) * std::cos(pitch) * radius;
-            const double y = std::sin(theta) * std::cos(pitch) * radius;
-            const double z = std::sin(pitch) * radius;
+            const double x = std::cos(theta) * std::cos(pitch) * cam_radius;
+            const double y = std::sin(theta) * std::cos(pitch) * cam_radius;
+            const double z = std::sin(pitch) * cam_radius;
             cam.setPosition(Eigen::Vector3f(x, y, z));
             cam.lookAt(Eigen::Vector3f(0.0, 0.0, 0.0));
             const std::string filename = "saved-" + std::to_string(i) + "-" + std::to_string(j) + ".png";
@@ -170,13 +170,17 @@ void example_cube_rgb() {
     std::vector<Eigen::Vector3f> points3d;
 
     {
-        // generate random points in a box
-        const int N = 1000;
-        const float halfsize = 0.12;
-        std::uniform_real_distribution<float> dist(-halfsize, halfsize);
+        // generate random points in a sphere
+        int N = 1000;
+        const float radius = cam_radius * 0.8;
+        std::uniform_real_distribution<float> dist(-radius, radius);
         std::default_random_engine gen(123);
-        for (int i = 0; i < N; i++) {
-            points3d.emplace_back(dist(gen), dist(gen), dist(gen));
+        while (N >= 0) {
+            Eigen::Vector3f p(dist(gen), dist(gen), dist(gen));
+            if (p.norm() < radius) {
+                points3d.emplace_back(p);
+                N--;
+            }
         }
     }
 
