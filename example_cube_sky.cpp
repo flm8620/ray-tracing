@@ -138,6 +138,36 @@ void example_cube_rgb() {
         scene.addObject(box, m);
     }
 
+    // add sky sphere serve as the background
+    {
+        auto m = std::make_shared<Material>();
+        m->diffuse_color = Eigen::Vector3f(0.8, 0.8, 0.8);
+        m->random_diffuse_texture = std::make_shared<RandomTexture>();
+        m->random_diffuse_texture->setScale(1.0);
+        m->specular_coeff = Eigen::Vector3f(0.0, 0.0, 0.0);
+        m->alpha_phong = 10;
+        m->specular = false;
+
+        const float radius = 100.0;
+        auto sky_sphere = std::make_shared<CSG_Sphere>(
+            Eigen::Vector3f::Zero(), radius);
+        scene.addObject(sky_sphere, m);
+    }
+
+    // add a blue sky top
+    {
+        auto m = std::make_shared<Material>();
+        m->diffuse_color = Eigen::Vector3f(0.3, 0.4, 0.8);
+        m->specular_coeff = Eigen::Vector3f(0.0, 0.0, 0.0);
+        m->alpha_phong = 10;
+        m->specular = false;
+
+        const float radius = 120.0;
+        auto sky_top_sphere = std::make_shared<CSG_Sphere>(
+            Eigen::Vector3f(0.f, 0.f, -30.f), radius);
+        scene.addObject(sky_top_sphere, m);
+    }
+
     std::vector<ImageInfo> images_info;
     std::filesystem::path image_out_dir = output_dir / "images";
     std::filesystem::create_directories(image_out_dir);
